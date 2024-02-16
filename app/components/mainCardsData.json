@@ -1,0 +1,68 @@
+[
+    {
+        "pl": [
+            {
+                "gameName": ["Nigdy", "przenigdy"],
+                "gameIcon": "neverHaveIEverIcon.png",
+                "gameRules": "Należy wyczytać pytanie podane na karcie,jeśli ktoś doświadczył takiej sytuacji musi się napić.",
+                "cardBackgroundColor": "#1F152E",
+                "cardNameColor": "#F113E8",
+                "cardButtonColor": "#6C1EC5",
+                "cardButtonShadowColor": "#8B3DFF",
+                "gamePath": "/neverHaveIEverCategories"
+            },
+            {
+                "gameName": ["7", "sekund"],
+                "gameIcon": "7SecondsIcon.png",
+                "gameRules": "Należy wpisać imiona graczy następnie po wylosowaniu gracza ma on 7 sekund na wykonanie zadania podanego na karcie",
+                "cardBackgroundColor": "#001F4D",
+                "cardNameColor": "#0A6CFF",
+                "cardButtonColor": "#0536E4",
+                "cardButtonShadowColor": "#391075",
+                "gamePath": "/7SecondsGame"
+            },
+            {
+                "gameName": ["Prawda", "czy", "wyzwanie"],
+                "gameIcon": "TruthOrDareIcon.png",
+                "gameRules": "Należy wpisać imiona graczy, wylosowana osoba wybiera karte prawda lub wyzwanie i wykonuje zadanie albo odpowiada na pytanie.",
+                "cardBackgroundColor": "#501212",
+                "cardNameColor": "#DD1111",
+                "cardButtonColor": "#F0000E",
+                "cardButtonShadowColor": "#391075",
+                "gamePath": "/truthOrDareAddPlayers"
+            }
+        ],
+        "en": [
+            {
+                "gameName": ["Never have", "i ever"],
+                "gameIcon": "neverHaveIEverIcon.png",
+                "gameRules": "You start game by reading sentence on card then players who experienced same thing must drink",
+                "cardBackgroundColor": "#1F152E",
+                "cardNameColor": "#F113E8",
+                "cardButtonColor": "#6C1EC5",
+                "cardButtonShadowColor": "#8B3DFF",
+                "gamePath": "/neverHaveIEverCategories"
+            },
+            {
+                "gameName": ["7", "seconds"],
+                "gameIcon": "7SecondsIcon.png",
+                "gameRules": "Insert player names,Choosen person has 7 seconds to preform task shown on card",
+                "cardBackgroundColor": "#001F4D",
+                "cardNameColor": "#0A6CFF",
+                "cardButtonColor": "#0536E4",
+                "cardButtonShadowColor": "#391075",
+                "gamePath": "/7SecondsGame"
+            },
+            {
+                "gameName": ["Truth", "or", "dare"],
+                "gameIcon": "TruthOrDareIcon.png",
+                "gameRules": "Insert player names,Chosen person decides on thuth or dare card then preforms choosen task accordingly.",
+                "cardBackgroundColor": "#501212",
+                "cardNameColor": "#DD1111",
+                "cardButtonColor": "#F0000E",
+                "cardButtonShadowColor": "#391075",
+                "gamePath": "/truthOrDareAddPlayers"
+            }
+        ]
+    }
+]

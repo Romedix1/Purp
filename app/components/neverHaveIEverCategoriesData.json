@@ -1,0 +1,56 @@
+[
+    {
+       "pl": [ 
+            {
+                "categoryIcon": "categoriesCouples.png",
+                "categoryName": "Dla par"
+            },
+            {
+                "categoryIcon": "categoriesPcGames.png",
+                "categoryName": "Gry komputerowe"
+            },
+            {
+                "categoryIcon": "categoriesAdults.png",
+                "categoryName": "Dla dorosłych"
+            },
+            {
+                "categoryIcon": "categoriesEducation.png",
+                "categoryName": "Edukacja"
+            },
+            {
+                "categoryIcon": "categoriesLoveLife.png",
+                "categoryName": "Życie miłosne"
+            },
+            {
+                "categoryIcon": "categoriesTravels.png",
+                "categoryName": "Podróże"
+            }
+        ],
+        "en": [
+            {
+                "categoryIcon": "categoriesCouples.png",
+                "categoryName": "Couples"
+            },
+            {
+                "categoryIcon": "categoriesPcGames.png",
+                "categoryName": "PC Games"
+            },
+            {
+                "categoryIcon": "categoriesAdults.png",
+                "categoryName": "For Adults"
+            },
+            {
+                "categoryIcon": "categoriesEducation.png",
+                "categoryName": "Education"
+            },
+            {
+                "categoryIcon": "categoriesLoveLife.png",
+                "categoryName": "Love Life"
+            },
+            {
+                "categoryIcon": "categoriesTravels.png",
+                "categoryName": "Travels"
+            }
+        ]
+    }
+]
