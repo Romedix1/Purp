@@ -4,7 +4,7 @@ import CategoriesCard from './components/neverHaveIEverCategoriesCard'; // Impor
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useFonts } from "expo-font";
 import { readLanguage } from './scripts/language'; // Import current language from local storage
-import { saveCategories } from './scripts/neverHaveIEverCategories'; // Import function saveCategories to saving categories to local storage
+import { saveCategories } from './scripts/categories'; // Import function saveCategories to saving categories to local storage
 import { Link } from 'expo-router';
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 
@@ -78,7 +78,7 @@ function neverHaveIEverCategories() {
 
   return (
     <View>
-        <Nav currentLang={currentLang} main={false} setNavLoaded={setNavLoaded}/>
+        <Nav currentLang={currentLang} main={false} />
         <View style={styles.categoriesContainer}>
             <Text style={[styles.categoriesHeader,  { fontSize: .1 * windowWidth, marginTop: .08 * windowWidth, marginBottom: .06 * windowWidth }]}>{currentLang === 'pl' ? 'Wybierz kategorie do gry' : 'Select a category for the game'}</Text>
 

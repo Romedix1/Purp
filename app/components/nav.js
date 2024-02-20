@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from 'expo-router';
 import { View, Image, StyleSheet, Pressable, useWindowDimensions, Text, Animated  } from "react-native";
 import { useFonts } from "expo-font"; 
-import Font from '../scripts/font'; // Import fonts
 import CategoriesData from './neverHaveIEverCategoriesData.json' // Import never have i ever categories data
 
 export default function Nav(props) {
@@ -13,11 +12,6 @@ export default function Nav(props) {
 
   // Set variable with window width
   const { width: windowWidth } = useWindowDimensions();
-
-  // If font isn't loaded then it returns a <Font /> component.
-  if (!fontsLoaded) {
-    return <Font />;
-  }
 
   return (
     <View style={[styles.navContainer, { paddingHorizontal: .05 * windowWidth, paddingVertical: .05 * windowWidth}]}>

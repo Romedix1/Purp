@@ -19,7 +19,7 @@
                 "cardNameColor": "#0A6CFF",
                 "cardButtonColor": "#0536E4",
                 "cardButtonShadowColor": "#391075",
-                "gamePath": "/7SecondsGame"
+                "gamePath": "/sevenSecondsGameAddPlayers"
             },
             {
                 "gameName": ["Prawda", "czy", "wyzwanie"],

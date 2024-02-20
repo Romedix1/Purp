@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated,PanResponder } from 'react-native';
 import { useFonts } from 'expo-font';
 import { readLanguage } from './scripts/language';
-import { readCategories } from './scripts/neverHaveIEverCategories';
+import { readCategories } from './scripts/categories';
 import Nav from './components/nav';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
