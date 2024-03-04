@@ -1,49 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated,PanResponder } from 'react-native';
+import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, PanResponder } from 'react-native';
 import { useFonts } from 'expo-font';
-import { readLanguage } from './scripts/language';
-import { readCategories } from './scripts/categories';
-import Nav from './components/nav';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { readLanguage } from './scripts/language'; // Import language functions
+import { readCategories } from './scripts/categories'; // Import category from local storage
+import Nav from './components/nav'; // Import Nav component
 import LoadingScreen from './loadingScreen'; // Import loading screen component
+import { drawACategory, drawSecondCategory, getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
 
 function NeverHaveIEver() {
-  // Set current lang default is english
+  // Set variable with window width and window height using useWindowDimensions hook
+  const { width: windowWidth,  height: windowHeight } = useWindowDimensions();
+
+  const styles = StyleSheet.create({
+    mainContainer: {
+      backgroundColor: '#131313',
+      alignItems: 'center',
+    },
+    categoriesMenuBackgroundOpacity: {
+      backgroundColor: '#000', 
+      position: 'absolute', 
+      opacity: .5, 
+      zIndex: 5,
+    },
+    displayedCategory: {
+      fontFamily: 'LuckiestGuy', 
+      width: '90%',
+      color: '#FFF', 
+      textAlign: 'center',
+      fontSize: .08 * windowWidth, 
+      marginTop: .07 * windowWidth
+    },
+    questionContainer: {
+      backgroundColor: '#41008B', 
+      borderRadius: .09 * windowWidth,
+      borderColor: '#FFF',
+      width: .78 * windowWidth, 
+      marginTop: .1 * windowWidth, 
+      borderWidth: .009 * windowWidth, 
+    },
+    questionText: {
+      textAlign: 'center', 
+      fontFamily: 'LuckiestGuy', 
+      color: '#FFF',
+      fontSize: .08 * windowWidth,
+      paddingVertical: .07 * windowWidth, 
+      height: 1.05 * windowWidth, 
+      paddingHorizontal: .05 * windowWidth
+    },
+    questionBackCard: {
+      width: .78 * windowWidth, 
+      borderRadius: 32, 
+      borderColor: '#FFF', 
+      paddingBottom: .2 * windowWidth, 
+      borderWidth: 4,
+      position: 'relative'
+    },
+    buttonContainer: {
+      backgroundColor: '#6C1EC5',
+      paddingVertical: .02 * windowWidth,
+      borderRadius: .035 * windowWidth,
+      width: '80%',
+      textAlign: 'center',
+      position: 'relative',
+      top: -(.17 * windowWidth),
+      marginBottom: .2 * windowWidth
+    },
+    buttonText: {
+      textAlign: 'center',
+      fontSize: .08 * windowWidth,
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
+    },
+  });
+
+  // Set current language (default is english)
   const [currentLang, setCurrentLang] = useState('en');
   // Array of selected categories
   const [selectedCategories, setSelectedCategories] = useState([]);
   // State for tracking categories menu status
-  const [isCategoriesOpen, setCategoriesOpen] = useState(false);
-  // State for storing current question
-  const [currentQuestion, setCurrentQuestion] = useState('');
-  // State for storing next question
-  const [nextQuestion, setNextQuestion] = useState('');
-  // State for storing drawn category
+  const [isCategoriesMenuOpened, setIsCategoriesMenuOpened] = useState(false);
+  // State for storing the first question
+  const [firstQuestion, setFirstQuestion] = useState('');
+  // State for storing the second question
+  const [secondQuestion, setSecondQuestion] = useState('');
+  // State for storing the drawn category
   const [drawnCategory, setDrawnCategory] = useState('');
-  // State for storing next drawn category
-  const [nextDrawnCategory, setNextDrawnCategory] = useState('');
-  // State for storing category translation but only in polish version
+  // State for storing the second drawn category
+  const [secondDrawnCategory, setSecondDrawnCategory] = useState('');
+  // State for storing category translation (only in polish version)
   const [translatedCategory, setTranslatedCategory] = useState('');
-  // State for storing category translation but only in polish version
-  const [nextTranslatedCategory, setNextTranslatedCategory] = useState('');
+  // State for storing second category translation (only in polish version)
+  const [secondTranslatedCategory, setsecondTranslatedCategory] = useState('');
   // State for tracking categories on load (button handling)
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   // State for tracking which question should be displayed
-  const [nextQuestionStatus, setNextQuestionStatus] = useState(false);
-  // State to check if the next question is loaded
-  const [loadingNextQuestion, setLoadingNextQuestion] = useState(false);
-  // State for tracking which direction card should be discarded
+  const [secondQuestionStatus, setSecondQuestionStatus] = useState(false);
+  // State to check if the second question is loaded
+  const [loadingSecondQuestion, setLoadingSecondQuestion] = useState(false);
+  // State for tracking which direction the card should be discarded
   const [direction, setDirection] = useState(false);
-  // State for tracking categories on load (finger handling)
+  // State for tracking question on load (finger handling)
   const [questionFetched, setQuestionFetched] = useState(false);
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
-  // State for tracking loading nav component
-  const [navLoaded, setNavLoaded] = useState(false);
-  // State for tracking loading nav component
+  // State for tracking loading questions
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
-
 
   // State for rotation animation
   const rotateValue = useState(new Animated.Value(0))[0];
@@ -51,10 +112,18 @@ function NeverHaveIEver() {
   const slideValue = useState(new Animated.Value(0))[0];
   // State for height animation (categories menu)
   const categoriesHeight = useState(new Animated.Value(0))[0];
-  // Set variable with window width
-  const { width: windowWidth } = useWindowDimensions();
-  // Set variable with window height
-  const { height: windowHeight } = useWindowDimensions();
+
+  // Interpolation for rotating the card based on the rotateValue
+  const rotateCard = rotateValue.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-15deg', '0deg', '15deg'],
+  });
+  
+  // Interpolation for translating the card along the X-axis based on the rotateValue
+  const slideCard = rotateValue.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: [ -(windowWidth * 1.5), 0, windowWidth * 1.5],
+  });
 
   // Load fonts 
   const [fontsLoaded] = useFonts({
@@ -77,9 +146,7 @@ function NeverHaveIEver() {
         console.error('Error while reading categories:', error);
       }
       
-      // Set component and Nav component loaded state
       setTimeout(() => setComponentLoaded(true), 50)
-      setTimeout(() => setNavLoaded(true), 50)
     };
 
     fetchData();
@@ -87,27 +154,25 @@ function NeverHaveIEver() {
 
   // Draw selected categories after load
   useEffect(() => {
-    if ( selectedCategories.length > 0) {
-      drawACategory();
-      drawNextCategory();
+    if (selectedCategories.length > 0) {
+        drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
+        drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory);
     }
   }, [categoriesLoaded]);
   
-  // Function to load next question which should be displayed
+  // Function to load second question which should be displayed
   useEffect(() => {
     if (translatedCategory) {
-      if (!currentQuestion) {
-        getQuestion().then(() => {
+      if (!firstQuestion) {
+        getQuestion(translatedCategory, currentLang, setFirstQuestion).then(() => {
           setTimeout(() => setQuestionsLoaded(true), 50)
           setTimeout(() => setComponentLoaded(true), 50)
-          setTimeout(() => setNavLoaded(true), 50)
         });
       }
-      if (!nextQuestion) {
-        getNextQuestion().then(() => {
+      if (!secondQuestion) {
+        getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion).then(() => {
           setTimeout(() => setQuestionsLoaded(true), 50)
           setTimeout(() => setComponentLoaded(true), 50)
-          setTimeout(() => setNavLoaded(true), 50)
         });
       }
     }
@@ -116,119 +181,25 @@ function NeverHaveIEver() {
   // Fetching question and category depend on question status
   useEffect(() => {
     async function fetchQuestionsAndDrawCategory() {
-      if (nextQuestionStatus) {
+      if (secondQuestionStatus) {
         if (translatedCategory) {
-          getQuestion();  
-          drawACategory();
+          getQuestion(translatedCategory, currentLang, setFirstQuestion); 
+          drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
         }
       } else {
-        if (nextTranslatedCategory) {
-          getNextQuestion();
-          drawNextCategory()
+        if (secondTranslatedCategory) {
+          getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion);
+          drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory)
         }
       }
     }
     
     fetchQuestionsAndDrawCategory();
   }, [selectedCategories]);
-  
-  // Function to draw a category randomly from the available options
-  async function drawACategory() {
-    const randomNumber = Math.floor(Math.random() * selectedCategories.length);
-    const randCategory = selectedCategories[randomNumber].selectedCategoryName;
 
-    setDrawnCategory(randCategory);
-
-    // Category translations (polish version)
-    switch (randCategory) {
-      case 'Dla par':
-        setTranslatedCategory('Couples');
-        break;
-      case 'Gry komputerowe':
-        setTranslatedCategory('PC Games');
-        break;
-      case 'Dla dorosłych':
-        setTranslatedCategory('For Adults');
-        break;
-      case 'Edukacja':
-        setTranslatedCategory('Education');
-        break;
-      case 'Życie miłosne':
-        setTranslatedCategory('Love Life');
-        break;
-      case 'Podróże':
-        setTranslatedCategory('Travels');
-        break;
-    }
-  }
-
-  // Function to draw next category randomly from the available options
-  async function drawNextCategory() {
-    const nextRandomNumber = Math.floor(Math.random() * selectedCategories.length);
-    const nextRandCategory = selectedCategories[nextRandomNumber].selectedCategoryName;
-  
-    setNextDrawnCategory(nextRandCategory)
-
-    // Category translations (polish version)
-    switch (nextRandCategory) {
-      case 'Dla par':
-        setNextTranslatedCategory('Couples');
-        break;
-      case 'Gry komputerowe':
-        setNextTranslatedCategory('PC Games');
-        break;
-      case 'Dla dorosłych':
-        setNextTranslatedCategory('For Adults');
-        break;
-      case 'Edukacja':
-        setNextTranslatedCategory('Education');
-        break;
-      case 'Życie miłosne':
-        setNextTranslatedCategory('Love Life');
-        break;
-      case 'Podróże':
-        setNextTranslatedCategory('Travels');
-        break;
-    }
-  }
-
-  // Fetching random question from database
-  async function getQuestion() {
-    try {
-      const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
-      const categoryRef = doc(neverHaveIEverRef, translatedCategory);
-      const questionsSnapshot = await getDocs(collection(categoryRef, 'Questions'));
-      const randomQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
-      const questionDocRef = doc(categoryRef, 'Questions', `Question#${randomQuestionNumber}`);
-      const questionDocSnapshot = await getDoc(questionDocRef);
-      const questionText = questionDocSnapshot.data()[currentLang];
-      setCurrentQuestion(questionText);
-    } catch (error) {
-      console.error('Error while fetching documents:', error);
-      setCurrentQuestion('');
-    }
-  }
-
-  // Fetching next random question from database
-  async function getNextQuestion() {
-    try {
-      const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
-      const categoryRef = doc(neverHaveIEverRef, nextTranslatedCategory);
-      const questionsSnapshot = await getDocs(collection(categoryRef, 'Questions'));
-      const randomNextQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
-      const nextQuestionDocRef = doc(categoryRef, 'Questions', `Question#${randomNextQuestionNumber}`);
-      const nextQuestionDocSnapshot = await getDoc(nextQuestionDocRef);
-      const nextQuestionText = nextQuestionDocSnapshot.data()[currentLang];
-      setNextQuestion(nextQuestionText);
-    } catch (error) {
-      console.error('Error while fetching documents:', error);
-      setNextQuestion('');
-    }
-  }
-  
-  // Function for getting next questions with card discard animation
+  // Function for getting second question with card discard animation
   async function getQuestions() {
-    setLoadingNextQuestion(true);
+    setLoadingSecondQuestion(true);
     Animated.parallel([
       Animated.timing(rotateValue, {
         toValue: direction ? 1 : -1,
@@ -245,18 +216,18 @@ function NeverHaveIEver() {
       slideValue.setValue(0);
       
       // Changing state for the question which should be displayed
-      setNextQuestionStatus(prev => !prev);
-      // If the next question status is true, then get and draw the next question
-      if (nextQuestionStatus) {
-        getNextQuestion().then(() => {
-          setLoadingNextQuestion(false);
-          drawNextCategory();
+      setSecondQuestionStatus(prev => !prev);
+      // If the second question status is true, then get and draw the second question
+      if (secondQuestionStatus) {
+        getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion).then(() => {
+          setLoadingSecondQuestion(false);
+          drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory);
         });
-      // If the next question status is false, then get and draw the next question
+      // If the second question status is false, then get and draw the second question
       } else {
-        getQuestion().then(() => {
-          setLoadingNextQuestion(false);
-          drawACategory();
+        getQuestion(translatedCategory, currentLang, setFirstQuestion).then(() => {
+          setLoadingSecondQuestion(false);
+          drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
         });
       }
     });
@@ -276,9 +247,9 @@ function NeverHaveIEver() {
         setDirection(false);
       }
   
-      // Blocking swipe until the next question is loaded
+      // Blocking swipe until the second question is loaded
       if (Math.abs(distance) > threshold) {
-        if (!questionFetched && !loadingNextQuestion) {
+        if (!questionFetched && !loadingSecondQuestion) {
           setQuestionFetched(true);
           setTimeout(() => {
             getQuestions();
@@ -287,33 +258,22 @@ function NeverHaveIEver() {
       }
     },
     onPanResponderRelease: () => {
-      if (loadingNextQuestion) {
+      if (loadingSecondQuestion) {
         setQuestionFetched(false);
       }
     },
   });
   
-  
   // Opening category container with animation
   const toggleCategories = () => {
-    setCategoriesOpen(!isCategoriesOpen);
+    setIsCategoriesMenuOpened(!isCategoriesMenuOpened);
 
     Animated.timing(categoriesHeight, {
-      toValue: isCategoriesOpen ? 0 : .76 * windowWidth,
+      toValue: isCategoriesMenuOpened ? 0 : .735 * windowWidth,
       duration: 300,
       useNativeDriver: false,
     }).start();
   };
-
-  const rotateCard = rotateValue.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: ['-15deg', '0deg', '15deg'],
-  });
-
-  const slideCard = rotateValue.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: [ -(windowWidth * 1.5), 0, windowWidth * 1.5],
-  });
 
   // Display loading screen if component or fonts are not loaded
   if (!fontsLoaded || !componentLoaded || !questionsLoaded) {
@@ -322,75 +282,31 @@ function NeverHaveIEver() {
 
   return (
     <View>
-      <Nav isCategoriesOpen={isCategoriesOpen} setCategoriesOpen={setCategoriesOpen} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} />
+      <Nav isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} />
   
-      <ScrollView contentContainerStyle={styles.neverHaveIEverContainer}>
-        {isCategoriesOpen && <Pressable onPress={toggleCategories} style={[styles.categoriesMenuBackgroundShadow, { width: 1 * windowWidth, height: 1 * windowHeight}]}></Pressable>}
-        <Text style={[styles.displayedCategory, { fontSize: 0.08 * windowWidth, marginTop: 0.07 * windowWidth}]}>Kategoria: {nextQuestionStatus ? nextDrawnCategory : drawnCategory} </Text>
+      <ScrollView contentContainerStyle={styles.mainContainer}>
+        {isCategoriesMenuOpened && <Pressable onPress={toggleCategories} style={[styles.categoriesMenuBackgroundOpacity, {width: 1 * windowWidth, height: 1 * windowHeight}]}></Pressable>}
+        <Text style={styles.displayedCategory}>{currentLang === 'pl' ? 'Kategoria: ' : 'Category: '} {secondQuestionStatus ? secondDrawnCategory : drawnCategory} </Text>
   
         <View>
-          <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: !nextQuestionStatus ? rotateCard : '0deg' }, { translateX: !nextQuestionStatus ? slideCard : 0 }], width: 0.78 * windowWidth, zIndex: nextQuestionStatus ? 1 : 2, position: 'relative',  marginTop: 0.1 * windowWidth, borderWidth: 4 }]}>
-            <Text style={[styles.questionText, { fontSize: 0.08 * windowWidth, paddingVertical: 0.07 * windowWidth, minHeight: 1.05 * windowWidth, paddingHorizontal: 0.05 * windowWidth }]}>{currentQuestion}</Text>
+          <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: !secondQuestionStatus ? rotateCard : '0deg' }, { translateX: !secondQuestionStatus ? slideCard : 0 }],  zIndex: secondQuestionStatus ? 1 : 2, position: 'relative' }]}>
+            <Text style={styles.questionText}>{firstQuestion}</Text>
           </Animated.View>
-          <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: nextQuestionStatus ? rotateCard : '0deg' }, { translateX: nextQuestionStatus ? slideCard : 0 }],width: 0.78 * windowWidth, position: 'absolute',  zIndex: nextQuestionStatus ? 2 : 1, marginTop: 0.1 * windowWidth, borderWidth: 4 }]}>
-            <Text style={[styles.questionText, { fontSize: 0.08 * windowWidth, paddingVertical: 0.07 * windowWidth, minHeight: 1.05 * windowWidth, paddingHorizontal: 0.05 * windowWidth }]}>{nextQuestion}</Text>
+          <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: secondQuestionStatus ? rotateCard : '0deg' }, { translateX: secondQuestionStatus ? slideCard : 0 }], zIndex: secondQuestionStatus ? 2 : 1, position: 'absolute' }]}>
+            <Text style={styles.questionText}>{secondQuestion}</Text>
           </Animated.View>
-          <View style={{ width: 0.78 * windowWidth, position: 'relative', top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#300066', borderRadius: 32, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: 4 }}>
+          <View style={[styles.questionBackCard, { top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#300066' }]}>
           </View>
-          <View style={{ width: 0.78 * windowWidth, position: 'relative', top: -0.3 * windowWidth, zIndex: -3, backgroundColor: '#1E0041', borderRadius: 32, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: 4 }}>
+          <View style={[styles.questionBackCard, { top: -0.3 * windowWidth, zIndex: -3, backgroundColor: '#1E0041' }]}>
           </View>
         </View>
   
-        <TouchableOpacity disabled={loadingNextQuestion} onPress={getQuestions} style={[styles.neverHaveIEverButtonContainer, { marginBottom: 0.2 * windowWidth }]}>
-          <Text style={styles.neverHaveIEverButtonText}>Następne pytanie</Text>
+        <TouchableOpacity disabled={loadingSecondQuestion} onPress={getQuestions} style={styles.buttonContainer}>
+          <Text style={styles.buttonText}>{currentLang === 'pl' ? 'Następne pytanie' : 'Next question '}</Text>
         </TouchableOpacity>
   
       </ScrollView>
     </View>
   );}
-const styles = StyleSheet.create({
-  neverHaveIEverContainer: {
-    backgroundColor: '#131313',
-    alignItems: 'center',
-  },
-  neverHaveIEverButtonContainer: {
-    backgroundColor: '#6C1EC5',
-    width: '80%',
-    paddingTop: 7,
-    paddingBottom: 7,
-    borderRadius: 16,
-    textAlign: 'center',
-    position: 'relative',
-    top: -50,
-  },
-  categoriesMenuBackgroundShadow: {
-    backgroundColor: '#000', 
-    position: 'absolute', 
-    opacity: 0.5, 
-    zIndex: 5 
-  },
-  questionContainer: {
-    backgroundColor: '#41008B', 
-    borderRadius: 32, 
-    borderColor: '#FFF',
-  },
-  questionText: {
-    textAlign: 'center', 
-    fontFamily: 'LuckiestGuy', 
-    color: '#FFF',
-  },
-  displayedCategory: {
-    fontFamily: 'LuckiestGuy', 
-    width: '90%',
-    color: '#FFF', 
-    textAlign: 'center' 
-  },
-  neverHaveIEverButtonText: {
-    textAlign: 'center',
-    fontSize: 32,
-    fontFamily: 'LuckiestGuy',
-    color: '#fff',
-  },
-});
 
 export default NeverHaveIEver;

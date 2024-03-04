@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
 import Nav from './components/nav'; // Import Nav component
 import PlayersSelection from './components/playersSelection'; // Import PlayersSelection component'
 import { readLanguage } from './scripts/language'; // Import language functions
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import { savePlayers, readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
+import { ScrollView } from 'react-native-gesture-handler';
 
 function sevenSecondsGameAddPlayers() {
-    // Set current lang default is english
+    // Set current language (default is english)
     const [currentLang, setCurrentLang] = useState("en");
     // State for tracking loading component
     const [componentLoaded, setComponentLoaded] = useState(false);
-    // State for tracking loading nav component
-    const [navLoaded, setNavLoaded] = useState(false);
+    // State for tracking loading players
     const [playersLoaded, setPlayersLoaded] = useState(false);
+    // Array of introduced players
     const [players, setPlayers] = useState([]);
 
     // Fetching saved language and players
@@ -31,9 +31,7 @@ function sevenSecondsGameAddPlayers() {
                 console.error('Error while reading players:', error);
             }
             
-            // Set component and Nav component loaded state
             setTimeout(() => setComponentLoaded(true), 50)
-            setTimeout(() => setNavLoaded(true), 50)
         };
 
         fetchData();   
@@ -43,22 +41,22 @@ function sevenSecondsGameAddPlayers() {
     useEffect(() => {
         const arePlayersValid = Array.isArray(players);
     
-        if (arePlayersValid) {
+        if (arePlayersValid && playersLoaded) {
             savePlayers(players);
         }
     }, [players]);
 
     // Display loading screen if component or fonts are not loaded
-    if (!componentLoaded || !navLoaded || !playersLoaded) {
+    if (!componentLoaded || !playersLoaded) {
         return <LoadingScreen/>;
     }
 
     return (
-        <View>
+        <ScrollView>
             <Nav currentLang={currentLang} main={false} contact={false} />
 
             <PlayersSelection players={players} setPlayers={setPlayers} currentLang={currentLang} setPlayersLoaded={setPlayersLoaded} game={"truthOrDare"} />
-        </View>
+        </ScrollView>
     )
 
 }

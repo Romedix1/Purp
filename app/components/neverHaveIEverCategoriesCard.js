@@ -1,10 +1,34 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Image, StyleSheet, Text, useWindowDimensions, Pressable } from 'react-native'
 import CategoriesData from './neverHaveIEverCategoriesData.json'
 
 function neverHaveIEverCategoriesCard(props) {
-  // Set variable with window width
+  // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
+
+  const styles = StyleSheet.create({
+    categoriesCardContainer: {
+      backgroundColor: '#41008B',
+      alignItems: 'center',
+      width: '46%',
+      aspectRatio: 1,
+      borderRadius: 0.05 * windowWidth,
+      borderWidth: 0.007 * windowWidth,
+      paddingVertical: .04 * windowWidth 
+    },
+    categoryCardIcon: {
+      marginBottom: .05 * windowWidth,
+      resizeMode: 'contain',
+      height: .15 * windowWidth
+    },
+    categoryCardText: {
+      textAlign: 'center',
+      color: '#fff',
+      fontFamily: 'LuckiestGuy',
+      fontSize: .05 * windowWidth, 
+      lineHeight: .05 * windowWidth
+    }
+  })
 
   return (    
     // Mapped categories from neverHaveIEverCategoriesData.json
@@ -49,11 +73,9 @@ function neverHaveIEverCategoriesCard(props) {
 
 
         return (
-          <Pressable onPress={() => toggleCategory(category.categoryName)} key={Categoryindex} style={[styles.categoriesCardContainer, { borderColor: isSelected  ? '#FF0AE6' : '#41008B', paddingVertical: .04 * windowWidth }]}>
-            <Image style={{marginBottom: .05 * windowWidth, transform: [{scale: .0025 * windowWidth}]  }} source={renderCategoryIcon(category.categoryIcon)} />
-              <Text style={[styles.categoryCardText, {fontSize: .05 * windowWidth, lineHeight: .05 * windowWidth}]}>
-                {category.categoryName}
-              </Text>
+          <Pressable onPress={() => toggleCategory(category.categoryName)} key={Categoryindex} style={[styles.categoriesCardContainer, { borderColor: isSelected  ? '#FF0AE6' : '#41008B'}]}>
+            <Image style={styles.categoryCardIcon} source={renderCategoryIcon(category.categoryIcon)} />
+              <Text style={styles.categoryCardText}>{category.categoryName}</Text>
             </Pressable>
         )
       })
@@ -61,21 +83,5 @@ function neverHaveIEverCategoriesCard(props) {
     })
   )
 }
-
-const styles = StyleSheet.create({
-  categoriesCardContainer: {
-    backgroundColor: '#41008B',
-    alignItems: 'center',
-    width: '46%',
-    aspectRatio: 1,
-    borderRadius: 16,
-    borderWidth: 3,
-  },
-  categoryCardText: {
-    textAlign: 'center',
-    color: '#fff',
-    fontFamily: 'LuckiestGuy',
-  }
-})
 
 export default neverHaveIEverCategoriesCard

@@ -8,18 +8,54 @@ import CardsData from './components/mainCardsData.json'; // Import game cards da
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 
 const Index = () => {
-
-  // Load fonts 
-  const [fontsLoaded] = useFonts({
-    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
-  });
   
-  // Set variable with window width
+  // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
 
-  // Set current lang default is english
+  // Styles
+  const styles = StyleSheet.create({
+    mainContainer: {
+      backgroundColor: '#131313',
+      width: '100%',
+      alignItems: 'center',
+      paddingBottom: .4 * windowWidth,
+    },
+    logoImage: {
+      resizeMode: 'contain',
+      height: 0.32 * windowWidth, 
+      marginTop: .055 * windowWidth
+    },
+    appName: {
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
+      fontSize: .15 * windowWidth, 
+      marginBottom: .02 * windowWidth,
+      marginTop: .015 * windowWidth
+    },
+    arrowStylesContainer: {
+      resizeMode: 'contain',
+      zIndex: 1,
+      position: 'absolute',
+    },
+    cardContainer: {
+      flexDirection: 'row',
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      transform: [{ translateX: 1.07 * windowWidth }]
+    },
+    cardsContainer: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }
+  })
+
+  // Set current language (default is english)
   const [currentLang, setCurrentLang] = useState("en");
-  // Set current card defualt 0 
+  // Set current card defualt card index is equel to 0 
   const [currentCard, setCurrentCard] = useState(0);
   // State for tracking whether the card is flipped default isn't flipped
   const [flipped, setFlipped] = useState(false);
@@ -27,8 +63,11 @@ const Index = () => {
   const [resetFlipped, setResetFlipped] = useState(false);
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
-  // State for tracking loading nav component
-  const [navLoaded, setNavLoaded] = useState(false);
+
+  // Load fonts 
+  const [fontsLoaded] = useFonts({
+    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+  });
 
   // Fetching saved language
   useEffect(() => {
@@ -36,18 +75,12 @@ const Index = () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
-      // Set component and Nav component loaded state
       setTimeout(() => setComponentLoaded(true), 50)
-      setTimeout(() => setNavLoaded(true), 50)
     };
 
-    fetchData();   
+    fetchData(); 
   }, []);
 
-  // Toggling language from polish to english and vice versa
-  const toggleLanguage = () => {
-    setCurrentLang((prevLang) => (prevLang === 'pl' ? 'en' : 'pl'));
-  };
 
   // Saving language to local storage after change
   useEffect(() => {
@@ -57,7 +90,7 @@ const Index = () => {
   // Number of games in app
   const amountOfGames = CardsData[0].en.length - 1;
 
-  // Setting previous game
+  // Function which is setting previous game card as main card
   const previousGame = () => {
     if (currentCard > 0) {
       setCurrentCard(currentCard - 1);
@@ -67,7 +100,7 @@ const Index = () => {
     flipped && setResetFlipped(true);
   };
   
-  // Setting next game
+  // Function which is setting next game card as main card
   const nextGame = () => {
     if (currentCard < amountOfGames) {
       setCurrentCard(currentCard + 1);
@@ -78,7 +111,7 @@ const Index = () => {
   };
 
   // If font isn't loaded then return null.
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !componentLoaded) {
     return null;
   }
 
@@ -107,54 +140,23 @@ const Index = () => {
   
   return (
     <View>
-      <Nav toggleLanguage={toggleLanguage} currentLang={currentLang} main={true}/>
+      <Nav setCurrentLang={setCurrentLang} currentLang={currentLang} main={true}/>
 
       <View {...panResponder.panHandlers}>
-        <ScrollView contentContainerStyle={[styles.mainContainer, { paddingBottom: 0.3 * windowWidth }]}>
-          <Image style={{ marginTop: .05 * windowWidth, transform: [{ scale: .0025* windowWidth }] }} source={require('../assets/icons/logo.png')}/>
-          <Text style={[styles.appName, {fontSize: .15 * windowWidth}]}>Purp</Text>
+        <ScrollView contentContainerStyle={styles.mainContainer}>
+          <Image style={styles.logoImage} source={require('../assets/icons/logo.png')}/>
+          <Text style={styles.appName}>Purp</Text>
           <View style={ styles.cardsContainer }>
-            <Pressable onPress={previousGame} style={[styles.arrowStylesContainer, {left: 0.005 * windowWidth, display: currentCard===0 ? 'none' : 'block',  transform: [{ scale: .0023* windowWidth }]}]}><Image style={{ left: 12, transform: [{ rotate: '180deg' }] }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
-            <View style={[ styles.cardContainer, { transform: [{ translateX: 1.07 * windowWidth }]}]}>
-              <Cards windowWidth={windowWidth} resetFlipped={resetFlipped} setResetFlipped={setResetFlipped} flipped={flipped} setFlipped={setFlipped} currentCard={currentCard} currentLang={currentLang} setCurrentLang={setCurrentLang} previousGame={previousGame} nextGame={nextGame} />
+            <Pressable onPress={previousGame} style={[styles.arrowStylesContainer, { left: 0.005 * windowWidth, display: currentCard===0 ? 'none' : 'block' }]}><Image style={{ resizeMode: 'contain', width: .08 *windowWidth, left: 12, transform: [{ rotate: '180deg' }] }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
+            <View style={styles.cardContainer}>
+              <Cards resetFlipped={resetFlipped} setResetFlipped={setResetFlipped} flipped={flipped} setFlipped={setFlipped} currentCard={currentCard} currentLang={currentLang} setCurrentLang={setCurrentLang} previousGame={previousGame} nextGame={nextGame} />
             </View>
-            <Pressable onPress={nextGame} style={[styles.arrowStylesContainer, { right: 0.045 * windowWidth, display: currentCard===amountOfGames ? 'none' : 'block',  transform: [{ scale: .0023* windowWidth }]}]}><Image source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
+            <Pressable onPress={nextGame} style={[styles.arrowStylesContainer, { right: 0.045 * windowWidth, display: currentCard===amountOfGames ? 'none' : 'block' }]}><Image style={{ width: .08 *windowWidth, resizeMode: 'contain' }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
           </View>
         </ScrollView>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    backgroundColor: '#131313',
-    width: '100%',
-    alignItems: 'center',
-  },
-  appName: {
-    fontFamily: 'LuckiestGuy',
-    color: '#fff',
-    marginBottom: 8, 
-    marginTop: 10,
-  },
-  arrowStylesContainer: {
-    position: 'absolute', 
-    zIndex: 1,
-  },
-  cardContainer: {
-    flexDirection: 'row',
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cardsContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
-})
 
 export default Index;

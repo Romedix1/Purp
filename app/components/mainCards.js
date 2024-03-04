@@ -4,6 +4,87 @@ import { View, StyleSheet, Text, Image, TouchableOpacity, Animated, Easing, useW
 import { Link } from 'expo-router';
 
 function MainCards(props) {
+  // Set variable with window width using useWindowDimensions hook
+  const { width: windowWidth } = useWindowDimensions();
+
+  // Styles
+  const styles = StyleSheet.create({
+    cardsContainer: {
+      flexDirection: 'row',
+      width: .685 * windowWidth,
+      marginRight: .26 * windowWidth, 
+    },
+    cardContainer: {
+      width: '100%',
+      borderColor: '#fff',
+    },
+    cardFront: {
+      width: '100%',
+      alignItems: 'center',
+      backfaceVisibility: 'hidden',
+      borderWidth: .004 * windowWidth, 
+      borderRadius: .08 * windowWidth, 
+      paddingTop: .09 * windowWidth, 
+    },
+    cardBack: {
+      width: '100%',
+      alignItems: 'center',
+      position: 'absolute',
+      top: 0,
+      backfaceVisibility: 'hidden',
+      paddingTop: .05 * windowWidth, 
+      borderRadius: .08 * windowWidth, 
+      borderWidth: .004 * windowWidth, 
+    },
+    rulesHeader: {
+      fontFamily: 'LuckiestGuy',
+      fontSize: .1 * windowWidth
+    },
+    cardText: {
+      fontFamily: 'LuckiestGuy',
+      fontSize: .11 * windowWidth, 
+      lineHeight: .11 * windowWidth,
+    },
+    cardGameRulesText: {
+      width: '90%',
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
+      textAlign: 'center',
+      marginTop: .04 * windowWidth,
+      marginBottom: .1 * windowWidth, 
+      fontSize: .055 * windowWidth, 
+      lineHeight: .075* windowWidth
+    },
+    cardIconContainer: {
+      backgroundColor: '#0F0F0F',
+      paddingHorizontal: .065 * windowWidth,
+      paddingVertical: .06 * windowWidth,
+      borderColor: '#262323',
+      borderWidth: .01 * windowWidth,
+      borderRadius: 1 * windowWidth,
+      marginTop: .06 * windowWidth,
+      marginBottom: .075 * windowWidth,
+    },
+    cardIcon: {
+      resizeMode: 'contain',
+      width: .2 * windowWidth,
+      height: .2 * windowWidth
+    },
+    cardButtonContainer: {
+      width: '85%',
+      marginBottom: .06 * windowWidth,
+      paddingVertical: .015 * windowWidth,
+      borderRadius: .035 * windowWidth,
+      textAlign: 'center',
+    },
+    cardButtonText: {
+      textAlign: 'center',
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
+      fontSize: .062 * windowWidth
+    },
+  });
+
   // Setting the state of isAnimating to true indicates that the card is currently in the process of rotating animation.
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -21,7 +102,7 @@ function MainCards(props) {
     // Set rotate card value
     const toValue = props.flipped ? 360 : 180;
 
-    // Card rotate animtaion details
+    // Card rotate animation details
     Animated.timing(rotateValue, {
       toValue,
       duration: 500,
@@ -63,7 +144,7 @@ function MainCards(props) {
   // Set current card position
   useEffect(() => {
     const slideAnimation = Animated.timing(translationX, {
-      toValue: -props.currentCard * 0.945 * props.windowWidth,
+      toValue: -props.currentCard * 0.945 * windowWidth,
       duration: 500,
       easing: Easing.linear,
       useNativeDriver: false,
@@ -93,39 +174,37 @@ function MainCards(props) {
           };
 
           return (
-            <Animated.View key={index} style={[ styles.cardsContainer, { width: .685 * props.windowWidth, transform: [{ translateX: translationX }], marginRight: .26 * props.windowWidth } ]}>
-              <Animated.View style={[ styles.cardContainer, styles.cardFront, frontAnimatedStyle, { backgroundColor: card.cardBackgroundColor },]}>
+            <Animated.View key={index} style={[styles.cardsContainer, { transform: [{ translateX: translationX }]}]}>
+              <Animated.View style={[styles.cardContainer, styles.cardFront, frontAnimatedStyle, { backgroundColor: card.cardBackgroundColor }]}>
                 {card.gameName.map((text, textIndex) => (
-                  <Text style={[ styles.cardText, { fontSize: .11 * props.windowWidth, lineHeight: .11 * props.windowWidth, color: textIndex === lastWordIndex ? lastWordColor : '#fff' },]} key={textIndex}>
-                    {text}
-                  </Text>
+                  <Text style={[styles.cardText, { color: textIndex === lastWordIndex ? lastWordColor : '#fff' }]} key={textIndex}>{text}</Text>
                 ))}
                 <View style={styles.cardIconContainer}>
-                  <Image source={renderGameIcon(card.gameIcon)} />
+                  <Image style={styles.cardIcon} source={renderGameIcon(card.gameIcon)} />
                 </View>
 
-                <Link href={card.gamePath} asChild  style={[styles.cardButtonContainer, { backgroundColor: card.cardButtonColor }]}>
+                <Link href={card.gamePath} asChild style={[styles.cardButtonContainer, { backgroundColor: card.cardButtonColor }]}>
                   <TouchableOpacity>
-                    <Text style={[styles.cardButtonText, { fontSize: .062 * props.windowWidth }]}>
+                    <Text style={styles.cardButtonText}>
                       {props.currentLang === 'pl' ? 'Rozpocznij grę' : 'Start game'}
                     </Text>
                   </TouchableOpacity>
                 </Link>
 
                 <TouchableOpacity onPress={props.flipped || isAnimating ? null : rotateCard} style={[styles.cardButtonContainer, { backgroundColor: card.cardButtonColor }]}>
-                  <Text style={[styles.cardButtonText, { fontSize: .062 * props.windowWidth }]}>
+                  <Text style={styles.cardButtonText}>
                     {props.currentLang === 'pl' ? 'Zasady gry' : 'Game rules'}
                   </Text>
                 </TouchableOpacity>
               </Animated.View>
               <Animated.View style={[ styles.cardContainer, styles.cardBack, backAnimatedStyle, { zIndex: props.flipped ? 1 : -1, backgroundColor: card.cardBackgroundColor },]}>
-                <Text style={[styles.rulesHeader, { color: lastWordColor, fontSize: .1 * props.windowWidth }]}>
+                <Text style={[styles.rulesHeader, { color: lastWordColor }]}>
                   {props.currentLang === 'pl' ? 'Zasady gry' : 'Game rules'}
                 </Text>
-                <Text style={[styles.cardGameRulesText, { fontSize: .055 * props.windowWidth, lineHeight: .075* props.windowWidth }]}>{card.gameRules}</Text>
+                <Text style={[styles.cardGameRulesText, {  }]}>{card.gameRules}</Text>
 
                 <TouchableOpacity onPress={props.flipped || isAnimating ? rotateCard : null} style={[styles.cardButtonContainer, { backgroundColor: card.cardButtonColor }]}>
-                  <Text style={[styles.cardButtonText, { fontSize: .062 * props.windowWidth }]}>
+                  <Text style={styles.cardButtonText}>
                     {props.currentLang === 'pl' ? 'Powrót do gry' : 'Back to game'}
                   </Text>
                 </TouchableOpacity>
@@ -137,68 +216,5 @@ function MainCards(props) {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  cardsContainer: {
-    flexDirection: 'row',
-  },
-  cardContainer: {
-    borderRadius: 30,
-    width: '100%',
-    borderColor: '#fff',
-    borderWidth: 2,
-  },
-  cardFront: {
-    width: '100%',
-    marginRight: 10,
-    alignItems: 'center',
-    backfaceVisibility: 'hidden',
-    paddingTop: 40
-  },
-  cardBack: {
-    width: '100%',
-    alignItems: 'center',
-    position: 'absolute',
-    top: 0,
-    backfaceVisibility: 'hidden',
-    paddingTop: 20
-  },
-  rulesHeader: {
-    fontFamily: 'LuckiestGuy',
-  },
-  cardText: {
-    fontFamily: 'LuckiestGuy',
-  },
-  cardGameRulesText: {
-    width: '90%',
-    fontFamily: 'LuckiestGuy',
-    marginBottom: 40,
-    color: '#fff',
-    textAlign: 'center',
-    lineHeight: 28,
-    marginTop: 15,
-  },
-  cardIconContainer: {
-    backgroundColor: '#0F0F0F',
-    padding: 23,
-    borderColor: '#262323',
-    borderWidth: 4,
-    borderRadius: 100,
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  cardButtonContainer: {
-    width: '85%',
-    marginBottom: 25,
-    paddingVertical: 7,
-    borderRadius: 16,
-    textAlign: 'center',
-  },
-  cardButtonText: {
-    textAlign: 'center',
-    fontFamily: 'LuckiestGuy',
-    color: '#fff',
-  },
-});
 
 export default MainCards;

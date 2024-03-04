@@ -9,7 +9,7 @@
                 "cardNameColor": "#F113E8",
                 "cardButtonColor": "#6C1EC5",
                 "cardButtonShadowColor": "#8B3DFF",
-                "gamePath": "/neverHaveIEverCategories"
+                "gamePath": "/neverHaveIEverCategoriess"
             },
             {
                 "gameName": ["7", "sekund"],
@@ -19,7 +19,7 @@
                 "cardNameColor": "#0A6CFF",
                 "cardButtonColor": "#0536E4",
                 "cardButtonShadowColor": "#391075",
-                "gamePath": "/sevenSecondsGameAddPlayers"
+                "gamePath": "/sevenSecondsAddPlayers"
             },
             {
                 "gameName": ["Prawda", "czy", "wyzwanie"],
@@ -51,7 +51,7 @@
                 "cardNameColor": "#0A6CFF",
                 "cardButtonColor": "#0536E4",
                 "cardButtonShadowColor": "#391075",
-                "gamePath": "/7SecondsGame"
+                "gamePath": "/sevenSecondsAddPlayers"
             },
             {
                 "gameName": ["Truth", "or", "dare"],
