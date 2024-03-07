@@ -4,8 +4,10 @@ import Nav from './components/nav'; // Import Nav component
 import { readLanguage } from './scripts/language'; // Import language functions
 import { getFirstTask, getSecondTask } from './scripts/sevenSeconds/tasksFunctions' // Import fetching tasks functions
 import LoadingScreen from './loadingScreen'; // Import loading screen component
+import DatabaseErrorScreen from './databaseError'; // Import database error screen
 import { useFonts } from 'expo-font';
 import { readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
+import useNetInfo from './scripts/checkConnection'
 
 function sevenSeconds() {
     // Set variable with window width using useWindowDimensions hook
@@ -102,11 +104,26 @@ function sevenSeconds() {
     const [drawnPlayer, setDrawnPlayer] = useState('');
     // State for storing the second drawn player
     const [secondDrawnPlayer, setSecondDrawnPlayer] = useState('');
+    // State for tracking database errors
+    const [databaseErrorStatus, setDatabaseErrorStatus] = useState(false);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
         LuckiestGuy: require('../assets/fonts/LuckiestGuy-Regular.ttf'),
     });
+
+    const netInfo = useNetInfo();
+    // Fetching saved language
+    useEffect(() => {
+      const fetchData = async () => {
+        const lang = await readLanguage();
+        setCurrentLang(lang);
+  
+        setTimeout(() => setComponentLoaded(true), 50)
+      };
+  
+      fetchData(); 
+    }, []);
 
     // State for rotation animation
     const rotateValue = useState(new Animated.Value(0))[0];
@@ -120,16 +137,11 @@ function sevenSeconds() {
           const lang = await readLanguage();
           setCurrentLang(lang);
 
-          try {
-              // Fetching saved players
-              const players = await readPlayers();
-              setPlayers(players);
-              // Setting that categories are loaded
-              setPlayersLoaded(true);
-              
-          } catch (error) {
-              console.error('Error while reading players:', error);
-          }
+          // Fetching saved players
+          const players = await readPlayers();
+          setPlayers(players);
+          // Setting that categories are loaded
+          setPlayersLoaded(true);
 
           setTimeout(() => setComponentLoaded(true), 50)
         };
@@ -191,12 +203,12 @@ function sevenSeconds() {
     useEffect(() => {
         async function fetchTasks() {
           if (!firstTask) {
-              getFirstTask(setFirstTask, currentLang).then(() => {
+              getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus).then(() => {
                 setTimeout(() => setTasksLoaded(true), 50)
               });
             }
           if (!secondTask) {
-            getSecondTask(setSecondTask, currentLang).then(() => {
+            getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus).then(() => {
               setTimeout(() => setTasksLoaded(true), 50)
             });
           }
@@ -237,15 +249,16 @@ function sevenSeconds() {
           {
             setStartedTimer(false)
           }
+
           // If the next question status is true, then get and draw the next question
           if (secondTaskStatus) {
-            getSecondTask(setSecondTask, currentLang).then(() => {
+            getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus).then(() => {
                 setLoadingSecondTask(false);
                 randSecondPlayer();
             });
           // If the next question status is false, then get and draw the next question
           } else {
-            getFirstTask(setFirstTask, currentLang).then(() => {
+            getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus).then(() => {
                 setLoadingSecondTask(false);
                 randPlayer();
             });
@@ -295,6 +308,16 @@ function sevenSeconds() {
 
     if (!fontsLoaded || !componentLoaded || !tasksLoaded) {
       return <LoadingScreen/>;
+    }
+    
+    // Display database error screen if there is error in fetching from database
+    if (databaseErrorStatus) {
+      return <DatabaseErrorScreen />;
+    }
+
+    // Display internet error screen if there is no internet connection
+    if (!netInfo) {
+      return <ConnectionErrorScreen/>;
     }
 
     return (

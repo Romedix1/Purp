@@ -4,31 +4,41 @@ import Nav from './components/nav'
 import { readLanguage } from './scripts/language'; // Import language functions
 import { useFonts } from "expo-font";
 import LoadingScreen from './loadingScreen'; // Import loading screen component
+import useNetInfo from './scripts/checkConnection'
+import { ScrollView } from 'react-native-gesture-handler';
 
 const contact = () => {
-  // Set variable with window width and window height
+  // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
   
   const styles = StyleSheet.create({
     mainContainer: {
       backgroundColor: '#131313',
       alignItems: 'center',
+      minHeight: 2 * windowWidth
     },
     boxContainer: {
       backgroundColor: '#300066',
       borderColor: "#fff",
-      borderWidth: 3,
-      borderRadius: 30,
-      padding: 10,
+      borderWidth: .006 * windowWidth,
+      borderRadius: .07 * windowWidth,
+      padding: .015 * windowWidth,
       width: '100%',
+      width: .8 * windowWidth, 
+      paddingHorizontal: .07 * windowWidth, 
+      paddingVertical: .05 * windowWidth, 
+      marginTop: .07 * windowWidth
     },
     boxHeader: {
       color: '#fff',
       fontFamily: 'LuckiestGuy',
+      fontSize: .1 * windowWidth, 
+      marginBottom: .025 * windowWidth
     },
     boxEmail: {
       color: '#fff',
       fontFamily: 'LuckiestGuy',
+      fontSize: .043 * windowWidth
     },
     iconsContainer: {
       flexDirection: 'row',
@@ -38,6 +48,11 @@ const contact = () => {
       resizeMode: 'contain',
       width: .12 * windowWidth,
       height: .12 * windowWidth,
+    },
+    aboutUs: {
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
+      fontSize: .05 * windowWidth,
     }
   });
 
@@ -45,8 +60,6 @@ const contact = () => {
   const [currentLang, setCurrentLang] = useState("en");
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
-  // State for tracking loading nav component
-  const [navLoaded, setNavLoaded] = useState(false);
 
   // Fetching saved language
   useEffect(() => {
@@ -56,7 +69,6 @@ const contact = () => {
 
       // Set component and Nav component loaded state
       setTimeout(() => setComponentLoaded(true), 50)
-      setTimeout(() => setNavLoaded(true), 50)
     };
 
     fetchData();   
@@ -67,40 +79,75 @@ const contact = () => {
     'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
   });  
 
+  const netInfo = useNetInfo();
+  // Fetching saved language
+  useEffect(() => {
+    const fetchData = async () => {
+      const lang = await readLanguage();
+      setCurrentLang(lang);
+
+      setTimeout(() => setComponentLoaded(true), 50)
+    };
+
+    fetchData(); 
+  }, []);
+
   // Display loading screen if component or fonts are not loaded
   if (!fontsLoaded || !componentLoaded) {
     return <LoadingScreen/>;
   }
-  const handleIconPress = () => {
-    // Otwórz link w przeglądarce
+
+  // Display internet error screen if there is no internet connection
+  if (!netInfo) {
+    return <ConnectionErrorScreen/>;
+  }
+
+  // Open discord invite
+  function discordLink() {
     Linking.openURL('https://discord.gg/SNz8kmnBrE');
   };
+
+  // Open instagram link
+  function instagramLink() {
+    Linking.openURL('https://discord.gg/SNz8kmnBrE');
+  };
+
+  // Open tiktok link
+  function tiktokLink() {
+    Linking.openURL('https://discord.gg/SNz8kmnBrE');
+  };
+
   return (
     <View>
-      <Nav contact={true} />
-      <View style={[styles.mainContainer, { minHeight: 2 * windowWidth }]}>
-        <View style={[styles.boxContainer, { width: .8 * windowWidth, paddingHorizontal: .07 * windowWidth, paddingVertical: .03 * windowWidth, marginTop: .13 * windowWidth }]}>
-          <Text style={[styles.boxHeader, { fontSize: .1 * windowWidth }]}>{currentLang === 'pl' ? 'Kontakt' : 'Contact'}</Text>
-          <Text style={[styles.boxEmail, { fontSize: .05 * windowWidth }]}>purp.app.contact@gmail.com</Text>
+      <Nav contact={true} currentLang={currentLang}/>
+      <ScrollView contentContainerStyle={styles.mainContainer}>
+        <View style={[styles.boxContainer, { marginTop: .13 * windowWidth }]}>
+          <Text style={styles.boxHeader}>{currentLang === 'pl' ? 'Kontakt' : 'Contact'}</Text>
+          <Text style={[styles.boxEmail, {  }]}>contact.purp.app@gmail.com</Text>
         </View>
 
-        <View style={[styles.boxContainer, { width: .8 * windowWidth, paddingHorizontal: .07 * windowWidth, paddingVertical: .05 * windowWidth, marginTop: .07 * windowWidth }]}>
-          <Text style={[styles.boxHeader, { fontSize: .1 * windowWidth, marginBottom: .025 * windowWidth }]}>Social media</Text>
+        <View style={styles.boxContainer}>
+          <Text style={styles.boxHeader}>Social media</Text>
           <View style={styles.iconsContainer}>
-            <Pressable onPress={() => handleIconPress()}>
+            <Pressable onPress={() => discordLink()}>
               <Image style={styles.socialMediaIcon} source={require('../assets/icons/discordIcon.png')} />              
             </Pressable>
 
-            <Image style={styles.socialMediaIcon} source={require('../assets/icons/instagramIcon.png')} />
-            <Image style={styles.socialMediaIcon} source={require('../assets/icons/tiktokIcon.png')} />
+            <Pressable onPress={() => instagramLink()}>
+              <Image style={styles.socialMediaIcon} source={require('../assets/icons/instagramIcon.png')} />
+            </Pressable>
+
+            <Pressable onPress={() => tiktokLink()}>
+              <Image style={styles.socialMediaIcon} source={require('../assets/icons/tiktokIcon.png')} />
+            </Pressable>
           </View>
         </View>
 
-        <View style={[styles.boxContainer, { width: .8 * windowWidth, paddingHorizontal: .07 * windowWidth, paddingVertical: .03 * windowWidth, marginTop: .07 * windowWidth }]}>
-          <Text style={[styles.boxHeader, { fontSize: .1 * windowWidth }]}>{currentLang === 'pl' ? 'O nas' : 'About us'}</Text>
-          <Text style={[styles.boxEmail, { fontSize: .045 * windowWidth }]}>{currentLang === 'pl' ? 'Jesteśmy' : 'We are'}</Text>
+        <View style={styles.boxContainer}>
+          <Text style={styles.boxHeader}>{currentLang === 'pl' ? 'O nas' : 'About us'}</Text>
+          <Text style={styles.aboutUs}>{currentLang === 'pl' ? 'Jesteśmy' : 'We are'}</Text>
         </View>
-      </View>
+      </ScrollView>
 
     </View>
   )

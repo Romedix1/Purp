@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, Image, useWindowDimensions } from 'react-native
 import { useFonts } from "expo-font";
 import { readLanguage } from './scripts/language'; // Import language functions
 
-function connectionError() {
+function databaseError() {
     // Set variable with window width and window height using useWindowDimensions hook
     const { width: windowWidth} = useWindowDimensions();
     
@@ -14,11 +14,16 @@ function connectionError() {
             alignItems: 'center',
             backgroundColor: '#1E0041',
         },
+        noInternetConnectionIcon: {
+            resizeMode: 'contain',
+            width: .6 * windowWidth,
+            height: .6 * windowWidth,
+        },
         noInternetConnectionHeader: {
             textAlign: 'center',
             fontFamily: 'LuckiestGuy',
             color: "#fff",
-            fontSize: .085 * windowWidth, 
+            fontSize: .07 * windowWidth,
             marginTop: .05 * windowWidth
         },
         noInternetConnectionText: {
@@ -26,9 +31,8 @@ function connectionError() {
             textAlign: 'center',
             fontFamily: 'LuckiestGuy',
             color: "#fff",
-            fontSize: .051 * windowWidth, 
-            marginTop: .04 * windowWidth,
-            lineHeight: .073 * windowWidth
+            fontSize: .045 * windowWidth, 
+            marginTop: .04 * windowWidth
         }
     })
 
@@ -52,11 +56,11 @@ function connectionError() {
 
     return (
         <View style={styles.noInternetConnectionContainer}>
-            <Image style={styles.noInternetConnectionIcon} source={require('../assets/icons/noInternetConnectionIcon.png')}/>
-            <Text style={styles.noInternetConnectionHeader}>Brak połączenia z internetem</Text>
-            <Text style={styles.noInternetConnectionText}>Przepraszamy, ale wygląda na to, że nie masz obecnie połączenia z internetem. Prosimy o sprawdzenie swojego połączenia sieciowego i spróbowanie ponownie za chwilę.</Text>
+            <Image style={styles.noInternetConnectionIcon} source={require('../assets/icons/databaseErrorIcon.png')}/>
+            <Text style={styles.noInternetConnectionHeader}>Błąd połączenia z bazą danych</Text>
+            <Text style={styles.noInternetConnectionText}>Oops! Coś poszło nie tak podczas próby dostępu do bazy danych. Prosimy o cierpliwość, pracujemy nad rozwiązaniem tego problemu</Text>
         </View>
     )
 }
 
-export default connectionError
+export default databaseError

@@ -7,6 +7,7 @@ import { readLanguage } from './scripts/language'; // Import current language fr
 import { saveCategories } from './scripts/categories'; // Import function saveCategories to saving categories to local storage
 import { Link } from 'expo-router';
 import LoadingScreen from './loadingScreen'; // Import loading screen component
+import useNetInfo from './scripts/checkConnection'
 
 function neverHaveIEverCategories() {
   // Set variable with window width
@@ -36,6 +37,8 @@ function neverHaveIEverCategories() {
       gap: .03 * windowWidth
     },
     categoriesErrorText: {
+      width: '90%',
+      textAlign: 'center',
       color: "#E40000",
       fontFamily: "LuckiestGuy",
       marginTop: .1 * windowWidth,  
@@ -72,6 +75,19 @@ function neverHaveIEverCategories() {
     'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
   });
   
+  const netInfo = useNetInfo();
+  // Fetching saved language
+  useEffect(() => {
+    const fetchData = async () => {
+      const lang = await readLanguage();
+      setCurrentLang(lang);
+
+      setTimeout(() => setComponentLoaded(true), 50)
+    };
+
+    fetchData(); 
+  }, []);
+
   // Checking length of categories if it's equel to 0 then error is displayed (checking every categories update)
   useEffect(() => {
     if(selectedCategories.length === 0)
@@ -105,14 +121,17 @@ function neverHaveIEverCategories() {
 
     if (areCategoriesValidJSON) {
       saveCategories(selectedCategories);
-    } else {
-      console.error('Nieprawidłowe dane kategorii:', selectedCategories);
     }
   }, [selectedCategories]);
 
   // Display loading screen if component or fonts are not loaded
   if (!fontsLoaded || !componentLoaded) {
     return <LoadingScreen/>;
+  }
+
+  // Display internet error screen if there is no internet connection
+  if (!netInfo) {
+    return <ConnectionErrorScreen/>;
   }
 
   return (
@@ -125,7 +144,7 @@ function neverHaveIEverCategories() {
               <CategoriesCard setEmptyCategoriesErr={setEmptyCategoriesErr} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} />
 
 
-              {(emptyCategoriesErr && emptyCategoriesErrOnLoad) && <Text style={styles.categoriesErrorText}>{currentLang === 'pl' ? 'Kategorie nie mogą być puste' : 'Categories can\'t be empty'}</Text>}
+              {(emptyCategoriesErr && emptyCategoriesErrOnLoad) && <Text style={styles.categoriesErrorText}>{currentLang === 'pl' ? 'Należy wybrać przynajmniej 1 kategorie' : 'Categories can\'t be empty'}</Text>}
               <Link style={[styles.CategoriesButtonContainer, { marginTop: !(emptyCategoriesErr && emptyCategoriesErrOnLoad) && .15 * windowWidth, marginBottom: .25 * windowWidth }]} href={emptyCategoriesErr ? '/neverHaveIEverCategories' : '/neverHaveIEver'} asChild>
                 <TouchableOpacity>
                   <Text style={styles.CategoriesButtonText}>Rozpocznij grę</Text>

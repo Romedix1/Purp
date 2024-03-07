@@ -63,7 +63,7 @@ import { db } from '../../../firebaseConfig';
   }
 
   // Fetching random question from database
-  export async function getQuestion(translatedCategory, currentLang, setCurrentQuestion) {
+  export async function getQuestion(translatedCategory, currentLang, setCurrentQuestion, setDatabaseErrorStatus) {
     try {
       const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
       const categoryRef = doc(neverHaveIEverRef, translatedCategory);
@@ -74,13 +74,13 @@ import { db } from '../../../firebaseConfig';
       const questionText = questionDocSnapshot.data()[currentLang];
       setCurrentQuestion(questionText);
     } catch (error) {
-      console.error('Error while fetching documents:', error);
+      setDatabaseErrorStatus(true);
       setCurrentQuestion('');
     }
   }
 
   // Fetching next random question from database
-  export async function getSecondQuestion(nextTranslatedCategory, currentLang, setNextQuestion) {
+  export async function getSecondQuestion(nextTranslatedCategory, currentLang, setNextQuestion, setDatabaseErrorStatus) {
     try {
       const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
       const categoryRef = doc(neverHaveIEverRef, nextTranslatedCategory);
@@ -91,7 +91,7 @@ import { db } from '../../../firebaseConfig';
       const nextQuestionText = nextQuestionDocSnapshot.data()[currentLang];
       setNextQuestion(nextQuestionText);
     } catch (error) {
-      console.error('Error while fetching documents:', error);
+      setDatabaseErrorStatus(true);
       setNextQuestion('');
     }
   }

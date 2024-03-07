@@ -4,7 +4,8 @@ import PlayersSelection from './components/playersSelection'; // Import PlayersS
 import { readLanguage } from './scripts/language'; // Import language functions
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import { savePlayers, readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native';
+import useNetInfo from './scripts/checkConnection'
 
 function sevenSecondsGameAddPlayers() {
     // Set current language (default is english)
@@ -16,20 +17,29 @@ function sevenSecondsGameAddPlayers() {
     // Array of introduced players
     const [players, setPlayers] = useState([]);
 
+    const netInfo = useNetInfo();
+    // Fetching saved language
+    useEffect(() => {
+      const fetchData = async () => {
+        const lang = await readLanguage();
+        setCurrentLang(lang);
+  
+        setTimeout(() => setComponentLoaded(true), 50)
+      };
+  
+      fetchData(); 
+    }, []);
+
     // Fetching saved language and players
     useEffect(() => {
         const fetchData = async () => {
             const lang = await readLanguage();
             setCurrentLang(lang);
 
-            try {
-                const players = await readPlayers();
-                setPlayers(players);
-                // Setting that categories are loaded
-                setPlayersLoaded(true);
-            } catch (error) {
-                console.error('Error while reading players:', error);
-            }
+            const players = await readPlayers();
+            setPlayers(players);
+            // Setting that categories are loaded
+            setPlayersLoaded(true);
             
             setTimeout(() => setComponentLoaded(true), 50)
         };
@@ -49,6 +59,11 @@ function sevenSecondsGameAddPlayers() {
     // Display loading screen if component or fonts are not loaded
     if (!componentLoaded || !playersLoaded) {
         return <LoadingScreen/>;
+    }
+
+    // Display internet error screen if there is no internet connection
+    if (!netInfo) {
+        return <ConnectionErrorScreen/>;
     }
 
     return (

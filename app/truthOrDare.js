@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, useWindowDimensions, Animated, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, Animated, Pressable, TouchableOpacity, ScrollView } from 'react-native';
 import { useFonts } from "expo-font"; 
 import { readLanguage } from './scripts/language'; // Import function savePlayers to saving players in local storage
 import Nav from './components/nav'; // Import Nav component
 import { readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
 import { loadTaskFromDatabase } from './scripts/truthOrDare/taskFunctions' // Import fetching tasks functions
+import LoadingScreen from './loadingScreen'; // Import loading screen
+import DatabaseErrorScreen from './databaseError'; // Import database error screen
+import useNetInfo from './scripts/checkConnection'
 
 function TruthOrDare() {
     // Set variable with window width using useWindowDimensions hook
@@ -114,11 +117,28 @@ function TruthOrDare() {
     const [loadedTask, setLoadedTask] = useState(false);
     // State for storing drawn task
     const [fetchedTask, setFetchedTask] = useState('');
+    // State for tracking database errors
+    const [databaseErrorStatus, setDatabaseErrorStatus] = useState(false);
+      // State for tracking loading component
+    const [componentLoaded, setComponentLoaded] = useState(false);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
         'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
     });
+
+    const netInfo = useNetInfo();
+    // Fetching saved language
+    useEffect(() => {
+      const fetchData = async () => {
+        const lang = await readLanguage();
+        setCurrentLang(lang);
+  
+        setTimeout(() => setComponentLoaded(true), 50)
+      };
+  
+      fetchData(); 
+    }, []);
 
     // X position for the "Truth" card
     const [truthTransformX] = useState(new Animated.Value(.06 * windowWidth));
@@ -163,13 +183,11 @@ function TruthOrDare() {
             const lang = await readLanguage();
             setCurrentLang(lang);
 
-            try {
-                const players = await readPlayers();
-                setPlayers(players);
-                setPlayersLoaded(true);
-            } catch (error) {
-                console.error('Error while reading players:', error);
-            }
+            const players = await readPlayers();
+            setPlayers(players);
+            setPlayersLoaded(true);
+
+            setTimeout(() => setComponentLoaded(true), 50)
         };
 
         fetchData();
@@ -426,13 +444,28 @@ function TruthOrDare() {
 
     // Effect to load task from database when the selected card changes
     useEffect(() => {
-        loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask);
+        loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask, setDatabaseErrorStatus);
     }, [selectedCard])
+
+    // Display loading screen if component or fonts are not loaded
+    if (!fontsLoaded || !componentLoaded || !playersLoaded) {
+        return <LoadingScreen/>;
+    }
+
+    // Display database error screen if there is error in fetching from database
+    if (databaseErrorStatus) {
+        return <DatabaseErrorScreen />;
+    }
+
+    // Display internet error screen if there is no internet connection
+    if (!netInfo) {
+        return <ConnectionErrorScreen/>;
+    }
 
     return (
         <View>
             <Nav currentLang={currentLang} main={false}/>
-            <View style={[styles.mainContainer]}>
+            <ScrollView contentContainerStyle={[styles.mainContainer]}>
                 <View style={[styles.currentPlayerContainer, { display: selectedCard !== '' ? 'none' : 'block'}]}>
                     <Text style={styles.currentPlayer}>Wybiera  </Text>
                     <Text style={[styles.currentPlayer, { color: '#EB1010' }]}>{drawnPlayer}</Text>
@@ -470,7 +503,7 @@ function TruthOrDare() {
                         <Text style={styles.buttonText}>Wybierz następne</Text>
                     </TouchableOpacity>
                 }
-            </View>
+            </ScrollView>
         </View>
     );
 }

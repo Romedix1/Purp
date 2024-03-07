@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 
 // Fetching random question from database
-export async function getFirstTask(setFirstTask, currentLang) {
+export async function getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus) {
     try {
         const sevenSecondsRef = collection(db, '7Seconds');
         const tasksSnapshot = await getDocs(sevenSecondsRef);
@@ -11,12 +11,12 @@ export async function getFirstTask(setFirstTask, currentLang) {
         const randomTaskDocSnapshot = await getDoc(randomTaskDoc);
         setFirstTask(randomTaskDocSnapshot.data()[currentLang]);
     } catch (error) {
-        console.error('Error while fetching documents:', error);
+        setDatabaseErrorStatus(true);
         setFirstTask('');
     }
 }
 
-export async function getSecondTask(setSecondTask, currentLang) {
+export async function getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus) {
     try {
         const sevenSecondsRef = collection(db, '7Seconds');
         const tasksSnapshot = await getDocs(sevenSecondsRef);
@@ -25,7 +25,7 @@ export async function getSecondTask(setSecondTask, currentLang) {
         const randomTaskDocSnapshot = await getDoc(randomTaskDoc);
         setSecondTask(randomTaskDocSnapshot.data()[currentLang]);
     } catch (error) {
-        console.error('Error while fetching documents:', error);
+        setDatabaseErrorStatus(true);
         setSecondTask('');
     }
 }

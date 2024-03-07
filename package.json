@@ -11,8 +11,8 @@
   "dependencies": {
     "@expo/webpack-config": "^19.0.0",
     "@firebase/firestore": "^4.4.3",
+    "@react-native-community/netinfo": "9.3.10",
     "@react-native-firebase/app": "^18.9.0",
-    "@react-native-firebase/firestore": "^18.7.3",
     "dotenv": "^16.4.4",
     "expo": "~49.0.15",
     "expo-constants": "~14.4.2",

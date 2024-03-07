@@ -77,35 +77,14 @@ export default function Nav(props) {
       borderRadius: 999,
       paddingVertical: .006 * windowWidth, 
       marginVertical: .015 * windowWidth, 
-      fontSize: .045 * windowWidth 
+      fontSize: .045 * windowWidth,
+      height: .073 * windowWidth
     }
-  });
-
-  // State to manage the state of the menu (open/close)
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Ref for arrow rotation animation
-  const arrowRotate = useRef(new Animated.Value(0)).current;
-    
-  // Interpolate arrow rotation value for animation
-  const arrowRotateInterpolate = arrowRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['90deg', '270deg'],
   });
 
   // Function to toggle language between polish and english
   const toggleLanguage = () => {
     props.setCurrentLang((prevLang) => (prevLang === 'pl' ? 'en' : 'pl'));
-  };
-
-  // Opening category container with animation
-  const rotateArrow = () => {
-    setIsMenuOpen(!isMenuOpen);
-    Animated.timing(arrowRotate, {
-      toValue: isMenuOpen ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
   };
 
   // Function to toggle category selection
@@ -142,9 +121,9 @@ export default function Nav(props) {
       {/* If it's the neverHaveIEver component, display category selection */}
       {props.neverHaveIEver &&
         <View>
-          <Pressable style={styles.selectCategoriesContainer} onPress={() => {props.toggleCategories(), rotateArrow()}}>
+          <Pressable style={styles.selectCategoriesContainer} onPress={() => {props.toggleCategories(), props.rotateArrow()}}>
             <View style={styles.selectCategories}>
-              <Animated.Image style={[styles.selectCategoriesArrow, { transform: [{ rotate: arrowRotateInterpolate }] }]} source={require("../../assets/icons/slideGameArrow.png")} />
+              <Animated.Image style={[styles.selectCategoriesArrow, { transform: [{ rotate: props.arrowRotateInterpolate }] }]} source={require("../../assets/icons/slideGameArrow.png")} />
               <Text style={[styles.selectCategoriesHeader, { fontSize: props.currentLang === 'pl' ? .044 * windowWidth : .038 * windowWidth}]}>{props.currentLang === 'pl' ? 'Zmień kategorie' : 'Change categories'}</Text>
             </View>
           </Pressable>
@@ -171,7 +150,7 @@ export default function Nav(props) {
 
       {/* If it's the contact page, display privacy policy text; otherwise, display contact text */}
       <Link href={props.contact ? '/privacy' : '/contact'} style={styles.navRightText}>
-        {props.contact ? props.currentLang === 'pl' ? 'Polityka prywatności' : 'Privacy policy' : props.currentLang === 'pl' ? 'Kontakt' : 'Contact'}
+        {props.contact ? (props.currentLang === 'pl' ? 'Polityka prywatności' : 'Privacy policy') : (props.currentLang === 'pl' ? 'Kontakt' : 'Contact')}
       </Link>
     </View>
   );

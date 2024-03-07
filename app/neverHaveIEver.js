@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, PanResponder } from 'react-native';
 import { useFonts } from 'expo-font';
 import { readLanguage } from './scripts/language'; // Import language functions
 import { readCategories } from './scripts/categories'; // Import category from local storage
 import Nav from './components/nav'; // Import Nav component
-import LoadingScreen from './loadingScreen'; // Import loading screen component
+import LoadingScreen from './loadingScreen'; // Import loading screen
+import DatabaseErrorScreen from './databaseError'; // Import database error screen
 import { drawACategory, drawSecondCategory, getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
+import useNetInfo from './scripts/checkConnection'
 
 function NeverHaveIEver() {
   // Set variable with window width and window height using useWindowDimensions hook
@@ -18,9 +20,11 @@ function NeverHaveIEver() {
     },
     categoriesMenuBackgroundOpacity: {
       backgroundColor: '#000', 
-      position: 'absolute', 
+      position: 'absolute',
       opacity: .5, 
       zIndex: 5,
+      width: 1 * windowWidth, 
+      height: 6 * windowHeight
     },
     displayedCategory: {
       fontFamily: 'LuckiestGuy', 
@@ -105,6 +109,10 @@ function NeverHaveIEver() {
   const [componentLoaded, setComponentLoaded] = useState(false);
   // State for tracking loading questions
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
+  // State for tracking database errors
+  const [databaseErrorStatus, setDatabaseErrorStatus] = useState(false);
+  // State to manage the state of the nav menu (open/close)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // State for rotation animation
   const rotateValue = useState(new Animated.Value(0))[0];
@@ -112,6 +120,8 @@ function NeverHaveIEver() {
   const slideValue = useState(new Animated.Value(0))[0];
   // State for height animation (categories menu)
   const categoriesHeight = useState(new Animated.Value(0))[0];
+  // Ref for arrow rotation animation
+  const arrowRotate = useRef(new Animated.Value(0)).current;
 
   // Interpolation for rotating the card based on the rotateValue
   const rotateCard = rotateValue.interpolate({
@@ -124,11 +134,30 @@ function NeverHaveIEver() {
     inputRange: [-1, 0, 1],
     outputRange: [ -(windowWidth * 1.5), 0, windowWidth * 1.5],
   });
+    
+  // Interpolate arrow rotation value for animation
+  const arrowRotateInterpolate = arrowRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['90deg', '270deg'],
+  });
 
   // Load fonts 
   const [fontsLoaded] = useFonts({
     LuckiestGuy: require('../assets/fonts/LuckiestGuy-Regular.ttf'),
   });
+
+  const netInfo = useNetInfo();
+  // Fetching saved language
+  useEffect(() => {
+    const fetchData = async () => {
+      const lang = await readLanguage();
+      setCurrentLang(lang);
+
+      setTimeout(() => setComponentLoaded(true), 50)
+    };
+
+    fetchData(); 
+  }, []);
 
   // Fetching saved language
   useEffect(() => {
@@ -137,14 +166,11 @@ function NeverHaveIEver() {
       setCurrentLang(lang);
 
       // Fetching saved categories from local storage
-      try {
-        const category = await readCategories();
-        setSelectedCategories(category);
-        // Setting that categories are loaded
-        setCategoriesLoaded(true);
-      } catch (error) {
-        console.error('Error while reading categories:', error);
-      }
+      const category = await readCategories();
+      setSelectedCategories(category);
+      // Setting that categories are loaded
+      setCategoriesLoaded(true);
+
       
       setTimeout(() => setComponentLoaded(true), 50)
     };
@@ -164,13 +190,13 @@ function NeverHaveIEver() {
   useEffect(() => {
     if (translatedCategory) {
       if (!firstQuestion) {
-        getQuestion(translatedCategory, currentLang, setFirstQuestion).then(() => {
+        getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus).then(() => {
           setTimeout(() => setQuestionsLoaded(true), 50)
           setTimeout(() => setComponentLoaded(true), 50)
         });
       }
       if (!secondQuestion) {
-        getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion).then(() => {
+        getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion, setDatabaseErrorStatus).then(() => {
           setTimeout(() => setQuestionsLoaded(true), 50)
           setTimeout(() => setComponentLoaded(true), 50)
         });
@@ -196,6 +222,16 @@ function NeverHaveIEver() {
     
     fetchQuestionsAndDrawCategory();
   }, [selectedCategories]);
+  
+  // Opening category container with animation
+  const rotateArrow = () => {
+    setIsMenuOpen(!isMenuOpen);
+    Animated.timing(arrowRotate, {
+      toValue: isMenuOpen ? 0 : 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  };
 
   // Function for getting second question with card discard animation
   async function getQuestions() {
@@ -280,12 +316,22 @@ function NeverHaveIEver() {
     return <LoadingScreen/>;
   }
 
+  // Display database error screen if there is error in fetching from database
+  if (databaseErrorStatus) {
+    return <DatabaseErrorScreen />;
+  }
+
+  // Display internet error screen if there is no internet connection
+  if (!netInfo) {
+    return <ConnectionErrorScreen/>;
+  }
+
   return (
     <View>
-      <Nav isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} />
+      <Nav isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} rotateArrow={rotateArrow} arrowRotateInterpolate={arrowRotateInterpolate} />
   
       <ScrollView contentContainerStyle={styles.mainContainer}>
-        {isCategoriesMenuOpened && <Pressable onPress={toggleCategories} style={[styles.categoriesMenuBackgroundOpacity, {width: 1 * windowWidth, height: 1 * windowHeight}]}></Pressable>}
+        {isCategoriesMenuOpened && <Pressable onPress={() => {toggleCategories(), rotateArrow()}} style={styles.categoriesMenuBackgroundOpacity}></Pressable>}
         <Text style={styles.displayedCategory}>{currentLang === 'pl' ? 'Kategoria: ' : 'Category: '} {secondQuestionStatus ? secondDrawnCategory : drawnCategory} </Text>
   
         <View>

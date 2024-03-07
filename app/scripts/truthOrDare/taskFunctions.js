@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 
 // Function to load a task from the Firebase Firestore database
-export async function loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask) {
+export async function loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask, setDatabaseErrorStatus) {
     if(selectedCard !== '') {
         try {
             const truthOrDareRef = collection(db, 'TruthOrDare');
@@ -16,7 +16,7 @@ export async function loadTaskFromDatabase(selectedCard, currentLang, setFetched
             setFetchedTask(cardData);
             setLoadedTask(true);
         } catch (error) {
-            console.error('Error while fetching document: ', error);
+            setDatabaseErrorStatus(true);
             setFetchedTask('');
         }
     }
