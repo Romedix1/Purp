@@ -138,16 +138,16 @@ function neverHaveIEverCategories() {
     <View>
         <Nav currentLang={currentLang} main={false} />
         <View style={styles.categoriesContainer}>
-            <Text style={styles.categoriesHeader}>{currentLang === 'pl' ? 'Wybierz kategorie do gry' : 'Select a category for the game'}</Text>
+            <Text style={styles.categoriesHeader}>{currentLang === 'pl' ? 'Wybierz kategorie do gry' : 'Select a categories for the game'}</Text>
 
             <ScrollView contentContainerStyle={styles.categoriesCardsContainer}>
               <CategoriesCard setEmptyCategoriesErr={setEmptyCategoriesErr} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} />
 
 
-              {(emptyCategoriesErr && emptyCategoriesErrOnLoad) && <Text style={styles.categoriesErrorText}>{currentLang === 'pl' ? 'Należy wybrać przynajmniej 1 kategorie' : 'Categories can\'t be empty'}</Text>}
+              {(emptyCategoriesErr && emptyCategoriesErrOnLoad) && <Text style={styles.categoriesErrorText}>{currentLang === 'pl' ? 'Należy wybrać przynajmniej 1 kategorie' : 'You must choose at least 1 category'}</Text>}
               <Link style={[styles.CategoriesButtonContainer, { marginTop: !(emptyCategoriesErr && emptyCategoriesErrOnLoad) && .15 * windowWidth, marginBottom: .25 * windowWidth }]} href={emptyCategoriesErr ? '/neverHaveIEverCategories' : '/neverHaveIEver'} asChild>
                 <TouchableOpacity>
-                  <Text style={styles.CategoriesButtonText}>Rozpocznij grę</Text>
+                  <Text style={styles.CategoriesButtonText}>{currentLang === 'pl' ? 'Rozpocznij grę' : 'Start game'}</Text>
                 </TouchableOpacity>
               </Link>
 

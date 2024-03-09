@@ -6,7 +6,7 @@ import { db } from '../../../firebaseConfig';
         const randomNumber = Math.floor(Math.random() * selectedCategories.length);
         const randCategory = selectedCategories[randomNumber].selectedCategoryName;
 
-        setDrawnCategory(randCategory);
+        setDrawnCategory(randCategory)
 
         // Category translations (polish version)
         switch (randCategory) {
@@ -28,42 +28,46 @@ import { db } from '../../../firebaseConfig';
         case 'Podróże':
             setTranslatedCategory('Travels');
             break;
+        default: 
+            setTranslatedCategory(randCategory);
         }
     }
 
 
-  // Function to draw next category randomly from the available options
-  export async function drawSecondCategory(selectedCategories, setNextDrawnCategory, setNextTranslatedCategory) {
-    const nextRandomNumber = Math.floor(Math.random() * selectedCategories.length);
-    const nextRandCategory = selectedCategories[nextRandomNumber].selectedCategoryName;
+  // Function to draw second category randomly from the available options
+  export async function drawSecondCategory(selectedCategories, setSecondDrawnCategory, setSecondTranslatedCategory) {
+    const secondRandomNumber = Math.floor(Math.random() * selectedCategories.length);
+    const secondRandCategory = selectedCategories[secondRandomNumber].selectedCategoryName;
   
-    setNextDrawnCategory(nextRandCategory)
+    setSecondDrawnCategory(secondRandCategory)
 
     // Category translations (polish version)
-    switch (nextRandCategory) {
+    switch (secondRandCategory) {
       case 'Dla par':
-        setNextTranslatedCategory('Couples');
+        setSecondTranslatedCategory('Couples');
         break;
       case 'Gry komputerowe':
-        setNextTranslatedCategory('PC Games');
+        setSecondTranslatedCategory('PC Games');
         break;
       case 'Dla dorosłych':
-        setNextTranslatedCategory('For Adults');
+        setSecondTranslatedCategory('For Adults');
         break;
       case 'Edukacja':
-        setNextTranslatedCategory('Education');
+        setSecondTranslatedCategory('Education');
         break;
       case 'Życie miłosne':
-        setNextTranslatedCategory('Love Life');
+        setSecondTranslatedCategory('Love Life');
         break;
       case 'Podróże':
-        setNextTranslatedCategory('Travels');
+        setSecondTranslatedCategory('Travels');
         break;
+      default: 
+        setSecondTranslatedCategory(secondRandCategory);
     }
   }
 
   // Fetching random question from database
-  export async function getQuestion(translatedCategory, currentLang, setCurrentQuestion, setDatabaseErrorStatus) {
+  export async function getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus) {
     try {
       const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
       const categoryRef = doc(neverHaveIEverRef, translatedCategory);
@@ -72,27 +76,27 @@ import { db } from '../../../firebaseConfig';
       const questionDocRef = doc(categoryRef, 'Questions', `Question#${randomQuestionNumber}`);
       const questionDocSnapshot = await getDoc(questionDocRef);
       const questionText = questionDocSnapshot.data()[currentLang];
-      setCurrentQuestion(questionText);
+      setFirstQuestion(questionText || "sad");
     } catch (error) {
       setDatabaseErrorStatus(true);
-      setCurrentQuestion('');
+      setFirstQuestion('');
     }
   }
 
-  // Fetching next random question from database
-  export async function getSecondQuestion(nextTranslatedCategory, currentLang, setNextQuestion, setDatabaseErrorStatus) {
+  // Fetching second random question from database
+  export async function getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion, setDatabaseErrorStatus) {
     try {
       const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
-      const categoryRef = doc(neverHaveIEverRef, nextTranslatedCategory);
+      const categoryRef = doc(neverHaveIEverRef, secondTranslatedCategory);
       const questionsSnapshot = await getDocs(collection(categoryRef, 'Questions'));
-      const randomNextQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
-      const nextQuestionDocRef = doc(categoryRef, 'Questions', `Question#${randomNextQuestionNumber}`);
-      const nextQuestionDocSnapshot = await getDoc(nextQuestionDocRef);
-      const nextQuestionText = nextQuestionDocSnapshot.data()[currentLang];
-      setNextQuestion(nextQuestionText);
+      const randomSecondQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
+      const secondQuestionDocRef = doc(categoryRef, 'Questions', `Question#${randomSecondQuestionNumber}`);
+      const secondQuestionDocSnapshot = await getDoc(secondQuestionDocRef);
+      const secondQuestionText = secondQuestionDocSnapshot.data()[currentLang];
+      setSecondQuestion(secondQuestionText || "asd");
     } catch (error) {
       setDatabaseErrorStatus(true);
-      setNextQuestion('');
+      setSecondQuestion('');
     }
   }
   

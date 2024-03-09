@@ -22,7 +22,7 @@
                 "gamePath": "/sevenSecondsAddPlayers"
             },
             {
-                "gameName": ["Prawda", "czy", "wyzwanie"],
+                "gameName": ["Prawda czy", "wyzwanie"],
                 "gameIcon": "TruthOrDareIcon.png",
                 "gameRules": "Należy wpisać imiona graczy, wylosowana osoba wybiera karte prawda lub wyzwanie i wykonuje zadanie albo odpowiada na pytanie.",
                 "cardBackgroundColor": "#501212",
@@ -54,7 +54,7 @@
                 "gamePath": "/sevenSecondsAddPlayers"
             },
             {
-                "gameName": ["Truth", "or", "dare"],
+                "gameName": ["Truth or", "dare"],
                 "gameIcon": "TruthOrDareIcon.png",
                 "gameRules": "Insert player names,Chosen person decides on thuth or dare card then preforms choosen task accordingly.",
                 "cardBackgroundColor": "#501212",

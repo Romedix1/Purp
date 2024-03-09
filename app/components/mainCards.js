@@ -42,7 +42,7 @@ function MainCards(props) {
     },
     cardText: {
       fontFamily: 'LuckiestGuy',
-      fontSize: .11 * windowWidth, 
+      fontSize: .105 * windowWidth, 
       lineHeight: .11 * windowWidth,
     },
     cardGameRulesText: {
