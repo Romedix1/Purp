@@ -114,8 +114,8 @@ function playersSelection(props) {
 
     return (
         <KeyboardAvoidingView style={styles.mainContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-            <Text style={[ styles.mainHeader, { marginTop: .09 * windowWidth }]}>Wprowadz</Text>
-            <Text style={[ styles.mainHeader, { color: props.game==="sevenSeconds" ? '#0A6CFF' : '#EB1010', lineHeight: .135 * windowWidth }]}>Graczy</Text>
+            <Text style={[ styles.mainHeader, { marginTop: .09 * windowWidth }]}>{props.currentLang === 'pl' ? 'Wprowadź' : 'Insert'}</Text>
+            <Text style={[ styles.mainHeader, { color: props.game==="sevenSeconds" ? '#0A6CFF' : '#EB1010', lineHeight: .135 * windowWidth }]}>{props.currentLang === 'pl' ? 'Graczy' : 'Players'}</Text>
 
             <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={false} style={styles.playersListContainer}>
                 {props.players.map((player, index) => {
@@ -132,7 +132,7 @@ function playersSelection(props) {
             </ScrollView>
 
             <View style={styles.inputContainer}>
-                <TextInput value={inputValue} onChangeText={(text) => setInputValue(text)} onSubmitEditing={addPlayer} style={[styles.playerInput, { paddingLeft: .05 * windowWidth, paddingRight: .12 * windowWidth, paddingVertical: .025 * windowWidth, fontSize: .055 * windowWidth }]}  placeholder="Wpisz nazwę gracza" />  
+                <TextInput value={inputValue} onChangeText={(text) => setInputValue(text)} onSubmitEditing={addPlayer} style={[styles.playerInput, { paddingLeft: .05 * windowWidth, paddingRight: .12 * windowWidth, paddingVertical: .025 * windowWidth, fontSize: .055 * windowWidth }]}  placeholder={props.currentLang === 'pl' ? 'Wpisz nazwę gracza' : 'Enter player name'} />  
             
                 <Pressable onPress={addPlayer} style={styles.addPlayerIconContainer}>
                     <Image style={styles.addPlayerIcon} source={require('../../assets/icons/add-player.png')} />

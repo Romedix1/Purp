@@ -5,7 +5,7 @@ import { useFonts } from "expo-font";
 import Cards from './components/mainCards'; // Import game cards component
 import { readLanguage, saveLanguage } from './scripts/language'; // Import language functions
 import CardsData from './components/mainCardsData.json'; // Import game cards data component
-import LoadingScreen from './loadingScreen'; // Import loading screen component
+import LoadingScreen from './loadingScreen'; // Import loading screen compoynent
 import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import useNetInfo from './scripts/checkConnection'
 
@@ -36,7 +36,7 @@ const Index = () => {
       backgroundColor: '#131313',
       width: '100%',
       alignItems: 'center',
-      paddingBottom: .4 * windowWidth,
+      minHeight: 2.6 * windowWidth,
     },
     logoImage: {
       resizeMode: 'contain',
@@ -72,24 +72,29 @@ const Index = () => {
   })
 
   const netInfo = useNetInfo();
+  let componentTimeout;
+  
   // Fetching saved language
   useEffect(() => {
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
-      setTimeout(() => setComponentLoaded(true), 50)
+      componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
 
     fetchData(); 
+
+    return () => {
+      clearTimeout(componentTimeout)
+    };
   }, []);
 
   // Saving language to local storage after change
   useEffect(() => {
     saveLanguage(currentLang);
   }, [currentLang]);
-  
-  // Number of games in app
+
   const amountOfGames = CardsData[0].en.length - 1;
 
   // Function which is setting previous game card as main card

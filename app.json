@@ -16,14 +16,26 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#54085A"
-      }
+        "backgroundColor": "#782180"
+      },
+      "package": "com.romedix.Purp"
     },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b4f1bc4d-88eb-4131-9641-0ae5890a3898"
+      }
+    }
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-9633487588777768~2873420161"
   }
 }

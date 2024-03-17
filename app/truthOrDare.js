@@ -8,6 +8,15 @@ import { loadTaskFromDatabase } from './scripts/truthOrDare/taskFunctions' // Im
 import LoadingScreen from './loadingScreen'; // Import loading screen
 import DatabaseErrorScreen from './databaseError'; // Import database error screen
 import useNetInfo from './scripts/checkConnection'
+import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import function saveCounter and readCounter to saving counter value and reading counter value in local storage
+import * as FileSystem from 'expo-file-system';
+
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 function TruthOrDare() {
     // Set variable with window width using useWindowDimensions hook
@@ -83,7 +92,7 @@ function TruthOrDare() {
         },
         buttonText: {
           textAlign: 'center',
-          fontSize: .078 * windowWidth,
+          fontSize: .072 * windowWidth,
           fontFamily: 'LuckiestGuy',
           color: '#fff',
         },
@@ -121,6 +130,11 @@ function TruthOrDare() {
     const [databaseErrorStatus, setDatabaseErrorStatus] = useState(false);
       // State for tracking loading component
     const [componentLoaded, setComponentLoaded] = useState(false);
+    // State to tracking when ad should be displayed
+    const [adCounter, setAdCounter] = useState(1);
+    const [counterLoaded, setCounterLoaded] = useState(false);
+    // State to tracking that ad is loaded
+    const [isAdLoaded, setIsAdLoaded] = useState(false);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
@@ -128,17 +142,6 @@ function TruthOrDare() {
     });
 
     const netInfo = useNetInfo();
-    // Fetching saved language
-    useEffect(() => {
-      const fetchData = async () => {
-        const lang = await readLanguage();
-        setCurrentLang(lang);
-  
-        setTimeout(() => setComponentLoaded(true), 50)
-      };
-  
-      fetchData(); 
-    }, []);
 
     // X position for the "Truth" card
     const [truthTransformX] = useState(new Animated.Value(.06 * windowWidth));
@@ -156,7 +159,8 @@ function TruthOrDare() {
     const [truthScaleY] = useState(new Animated.Value(1));
     // Scale Y for the "Dare" card
     const [dareScaleY] = useState(new Animated.Value(1));
-
+    // State to tracking when ad should be displayed
+    
     // State for rotation animation
     const rotateValue = useRef(new Animated.Value(0)).current;
 
@@ -179,18 +183,30 @@ function TruthOrDare() {
 
     // Function to fetch data when the component mounts
     useEffect(() => {
+        let componentTimeout
+        
         const fetchData = async () => {
             const lang = await readLanguage();
             setCurrentLang(lang);
 
+            const counter = await readAdCounter();
+            setAdCounter(counter);
+            setCounterLoaded(true);
+  
+            // Fetching saved players
             const players = await readPlayers();
             setPlayers(players);
+            // Setting that categories are loaded
             setPlayersLoaded(true);
 
-            setTimeout(() => setComponentLoaded(true), 50)
+            componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
-
+    
         fetchData();
+    
+        return () => {
+          clearTimeout(componentTimeout)
+        }  
     }, []);
 
     // Effect to randomly select a player when the list of players changes
@@ -435,8 +451,8 @@ function TruthOrDare() {
     };
     
     // Function to select a category (Truth or Dare)
-    async function selectCategory(category) {
-        if(selectedCard === '') {
+    async function selectCard(category) {
+        if(selectedCard === '' && !isAnimating) {
             setSelectedCard(category);
             category==="Truth" ? discardDareCard() : discardTruthCard();
         }
@@ -445,6 +461,63 @@ function TruthOrDare() {
     // Effect to load task from database when the selected card changes
     useEffect(() => {
         loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask, setDatabaseErrorStatus);
+    }, [selectedCard])
+
+   // Clear cache
+    async function clearCache() {
+        await FileSystem.deleteAsync(FileSystem.cacheDirectory, { idempotent: true });
+    }
+
+    useEffect(() => {
+    const handleAdLoaded = () => {
+        setIsAdLoaded(true);
+    };
+
+    const handleAdClosed = () => {
+        setIsAdLoaded(false);
+        setAdCounter(1)
+        clearCache();
+    };
+
+    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, handleAdLoaded);
+    const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
+
+    interstitial.load();
+
+    return () => {
+        unsubscribeLoaded();
+        unsubscribeAdClosed();
+
+        interstitial.removeAllListeners();
+    };
+    }, []);
+
+    useEffect(() => {
+    if(!isAdLoaded)
+    {
+        interstitial.load();
+        setIsAdLoaded(true);
+    }
+
+        if (adCounter % 10 === 0) {
+        interstitial.show();
+        }
+
+    }, [adCounter]);
+
+    useEffect(() => {
+        if(counterLoaded)
+        {
+        saveAdCounter(adCounter);
+        }
+    }, [adCounter]);
+
+    // Update ad counter value after question changed
+    useEffect(() => {
+        if(counterLoaded) {
+            console.log(adCounter)
+            setAdCounter((prev) => prev+1)
+        }
     }, [selectedCard])
 
     // Display loading screen if component or fonts are not loaded
@@ -467,15 +540,25 @@ function TruthOrDare() {
             <Nav currentLang={currentLang} main={false}/>
             <ScrollView contentContainerStyle={[styles.mainContainer]}>
                 <View style={[styles.currentPlayerContainer, { display: selectedCard !== '' ? 'none' : 'block'}]}>
-                    <Text style={styles.currentPlayer}>Wybiera  </Text>
-                    <Text style={[styles.currentPlayer, { color: '#EB1010' }]}>{drawnPlayer}</Text>
+                    {currentLang === 'pl' ? (
+                        <>
+                            <Text style={styles.currentPlayer}>Wybiera  </Text>
+                            <Text style={[styles.currentPlayer, { color: '#EB1010' }]}>{drawnPlayer}</Text>
+                        </>
+                    ) : (
+                        <>
+                            <Text style={[styles.currentPlayer, { color: '#EB1010' }]}>{drawnPlayer}</Text>
+                            <Text style={styles.currentPlayer}>  is choosing</Text>
+                        </>
+                    )}
+
                 </View>
                 
                 <View style={[styles.cardsContainer, {marginTop: 0.25 * windowWidth, paddingTop: selectedCard !== '' ? .08 * windowWidth : 0}]}>
-                    <Pressable style={{zIndex: 1}} onPress={() => selectCategory("Truth")}>
+                    <Pressable style={{zIndex: 1}} onPress={() => selectCard("Truth")}>
                         <Animated.View style={[styles.cardsContainer, styles.card,  { opacity: !truthCardVisibility ? 0 : 1, transform: [{ rotate: rotateTruthCard}, {translateX: truthTransformX}, { scaleX: truthScaleX }, { scaleY: truthScaleY } ]}]}>
                             <Animated.View style={[styles.cardContainer, styles.cardFront,  styles.truthCard , frontAnimatedStyle ]}>
-                                <Text style={styles.truthHeader}>Prawda</Text>
+                                <Text style={styles.truthHeader}>{currentLang === 'pl' ? 'Prawda' : 'Truth'}</Text>
                             </Animated.View>
                             <Animated.View style={[styles.cardContainer,styles.cardBack, backAnimatedStyle,  styles.truthCard ]}>
                                 <Text style={styles.cardBackText}>{fetchedTask}</Text>
@@ -483,11 +566,11 @@ function TruthOrDare() {
                         </Animated.View>
                     </Pressable>
 
-                    <Pressable onPress={() => selectCategory("Dare")}>
+                    <Pressable onPress={() => selectCard("Dare")}>
                         <Animated.View style={[ styles.cardsContainer, styles.card,  { opacity: !dareCardVisibility ? 0 : 1,  transform: [{ rotate: rotateDareCard}, {translateX: dareTransformX}, { scaleX: dareScaleX }, { scaleY: dareScaleY } ]}]}>
                             
                             <Animated.View style={[styles.cardContainer, styles.cardFront,  styles.dareCard , frontAnimatedStyle, {height: 0.9 * windowWidth}]}>
-                                <Text style={styles.truthHeader}>Wyzwanie</Text>
+                                <Text style={styles.truthHeader}>{currentLang === 'pl' ? 'Wyzwanie' : 'Dare'}</Text>
                             </Animated.View>
 
                             <Animated.View style={[styles.cardContainer, styles.cardBack, backAnimatedStyle, styles.dareCard ]}>
@@ -499,8 +582,8 @@ function TruthOrDare() {
                     
                 </View>
                 {loadedTask && 
-                    <TouchableOpacity onPress={() => returnCards()} style={[styles.buttonContainer, { marginTop: .55 * windowWidth, backgroundColor: selectedCard === 'Dare' ? '#F0000E' : '#6ACC2C' }]}>
-                        <Text style={styles.buttonText}>Wybierz następne</Text>
+                    <TouchableOpacity disabled={isAnimating} onPress={() => returnCards()} style={[styles.buttonContainer, { marginTop: .55 * windowWidth, backgroundColor: selectedCard === 'Dare' ? '#F0000E' : '#6ACC2C' }]}>
+                        <Text style={styles.buttonText}>{currentLang === 'pl' ? 'Wybierz następną kartę' : 'Select next card'}</Text>
                     </TouchableOpacity>
                 }
             </ScrollView>

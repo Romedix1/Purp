@@ -18,20 +18,11 @@ function sevenSecondsGameAddPlayers() {
     const [players, setPlayers] = useState([]);
 
     const netInfo = useNetInfo();
-    // Fetching saved language
-    useEffect(() => {
-      const fetchData = async () => {
-        const lang = await readLanguage();
-        setCurrentLang(lang);
-  
-        setTimeout(() => setComponentLoaded(true), 50)
-      };
-  
-      fetchData(); 
-    }, []);
 
     // Fetching saved language and players
     useEffect(() => {
+        let componentTimeout
+
         const fetchData = async () => {
             const lang = await readLanguage();
             setCurrentLang(lang);
@@ -41,11 +32,15 @@ function sevenSecondsGameAddPlayers() {
             // Setting that categories are loaded
             setPlayersLoaded(true);
             
-            setTimeout(() => setComponentLoaded(true), 50)
+            componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
-
-        fetchData();   
-    }, []);
+    
+        fetchData();
+    
+        return () => {
+          clearTimeout(componentTimeout)
+        }
+      }, []);
 
     // Saving selected players to local storage after change
     useEffect(() => {

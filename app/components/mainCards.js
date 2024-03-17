@@ -52,7 +52,7 @@ function MainCards(props) {
       textAlign: 'center',
       marginTop: .04 * windowWidth,
       marginBottom: .1 * windowWidth, 
-      fontSize: .055 * windowWidth, 
+      fontSize: .05 * windowWidth, 
       lineHeight: .075* windowWidth
     },
     cardIconContainer: {
@@ -106,7 +106,7 @@ function MainCards(props) {
     Animated.timing(rotateValue, {
       toValue,
       duration: 500,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start(() => {
       props.setFlipped((prevFlipped) => !prevFlipped);
       props.setResetFlipped(false);
@@ -114,6 +114,19 @@ function MainCards(props) {
     });
   };
 
+  useEffect(() => {
+
+  const clearCache = () => {
+    setIsAnimating(false);
+    translationX.setValue(0);
+    rotateValue.setValue(0);
+  };
+
+  return () => {
+    clearCache();
+  };
+}, []);
+  
   // Reset rotated card value 
   useEffect(() => {
     if (props.resetFlipped) {
@@ -147,7 +160,7 @@ function MainCards(props) {
       toValue: -props.currentCard * 0.945 * windowWidth,
       duration: 500,
       easing: Easing.linear,
-      useNativeDriver: false,
+      useNativeDriver: true,
     });
 
     slideAnimation.start();

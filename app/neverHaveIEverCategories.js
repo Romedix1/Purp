@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensio
 import { useFonts } from "expo-font";
 import { readLanguage } from './scripts/language'; // Import current language from local storage
 import { saveCategories } from './scripts/categories'; // Import function saveCategories to saving categories to local storage
+import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import { Link } from 'expo-router';
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import useNetInfo from './scripts/checkConnection'
@@ -76,17 +77,6 @@ function neverHaveIEverCategories() {
   });
   
   const netInfo = useNetInfo();
-  // Fetching saved language
-  useEffect(() => {
-    const fetchData = async () => {
-      const lang = await readLanguage();
-      setCurrentLang(lang);
-
-      setTimeout(() => setComponentLoaded(true), 50)
-    };
-
-    fetchData(); 
-  }, []);
 
   // Checking length of categories if it's equel to 0 then error is displayed (checking every categories update)
   useEffect(() => {
@@ -101,17 +91,23 @@ function neverHaveIEverCategories() {
 
   // Fetching saved language
   useEffect(() => {
+    let componentTimeout
+
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
-      setTimeout(() => setComponentLoaded(true), 50)
+      componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
 
     fetchData();
 
     // Hiding error message on component load
     setEmptyCategoriesErrOnLoad(false)
+    
+    return () => {
+      clearTimeout(componentTimeout)
+    };
   }, []);
 
   // Saving selected categories to local storage after change

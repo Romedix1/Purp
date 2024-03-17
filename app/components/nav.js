@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import { Link } from 'expo-router';
 import { View, Image, StyleSheet, Pressable, useWindowDimensions, Text, Animated  } from "react-native";
 import CategoriesData from './neverHaveIEverCategoriesData.json' // Import never have i ever categories data
@@ -148,9 +148,9 @@ export default function Nav(props) {
         </View>
       }
 
-      {/* If it's the contact page, display privacy policy text; otherwise, display contact text */}
+      {/* If it's the contact page, display about app link otherwise, display contact link */}
       <Link href={props.contact ? '/privacy' : '/contact'} style={styles.navRightText}>
-        {props.contact ? (props.currentLang === 'pl' ? 'Polityka prywatności' : 'Privacy policy') : (props.currentLang === 'pl' ? 'Kontakt' : 'Contact')}
+        {props.contact ? (props.currentLang === 'pl' ? 'O aplikacji' : 'About app') : (props.currentLang === 'pl' ? 'Kontakt' : 'Contact')}
       </Link>
     </View>
   );

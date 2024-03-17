@@ -1,11 +1,10 @@
-import { View, Text, StyleSheet, useWindowDimensions, Image, Pressable, Linking  } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions, Image, Pressable, Linking, ScrollView  } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import Nav from './components/nav'
 import { readLanguage } from './scripts/language'; // Import language functions
 import { useFonts } from "expo-font";
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import useNetInfo from './scripts/checkConnection'
-import { ScrollView } from 'react-native-gesture-handler';
 
 const contact = () => {
   // Set variable with window width using useWindowDimensions hook
@@ -23,7 +22,6 @@ const contact = () => {
       borderWidth: .006 * windowWidth,
       borderRadius: .07 * windowWidth,
       padding: .015 * windowWidth,
-      width: '100%',
       width: .8 * windowWidth, 
       paddingHorizontal: .07 * windowWidth, 
       paddingVertical: .05 * windowWidth, 
@@ -61,19 +59,6 @@ const contact = () => {
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
 
-  // Fetching saved language
-  useEffect(() => {
-    const fetchData = async () => {
-      const lang = await readLanguage();
-      setCurrentLang(lang);
-
-      // Set component and Nav component loaded state
-      setTimeout(() => setComponentLoaded(true), 50)
-    };
-
-    fetchData();   
-  }, []);
-
   // Load fonts 
   const [fontsLoaded] = useFonts({
     'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
@@ -82,14 +67,20 @@ const contact = () => {
   const netInfo = useNetInfo();
   // Fetching saved language
   useEffect(() => {
+    let componentTimeout;
+
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
-      setTimeout(() => setComponentLoaded(true), 50)
+      componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
 
     fetchData(); 
+
+    return () => {
+      clearTimeout(componentTimeout)
+    };
   }, []);
 
   // Display loading screen if component or fonts are not loaded
@@ -109,12 +100,12 @@ const contact = () => {
 
   // Open instagram link
   function instagramLink() {
-    Linking.openURL('https://discord.gg/SNz8kmnBrE');
+    Linking.openURL('https://www.instagram.com/purppartygames/');
   };
 
   // Open tiktok link
   function tiktokLink() {
-    Linking.openURL('https://discord.gg/SNz8kmnBrE');
+    Linking.openURL('https://www.tiktok.com/@purppartygames');
   };
 
   return (

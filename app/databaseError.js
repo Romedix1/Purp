@@ -57,8 +57,8 @@ function databaseError() {
     return (
         <View style={styles.noInternetConnectionContainer}>
             <Image style={styles.noInternetConnectionIcon} source={require('../assets/icons/databaseErrorIcon.png')}/>
-            <Text style={styles.noInternetConnectionHeader}>Błąd połączenia z bazą danych</Text>
-            <Text style={styles.noInternetConnectionText}>Oops! Coś poszło nie tak podczas próby dostępu do bazy danych. Prosimy o cierpliwość, pracujemy nad rozwiązaniem tego problemu</Text>
+            <Text style={styles.noInternetConnectionHeader}>{currentLang === 'pl' ? 'Błąd połączenia z bazą danych' : 'Database connection error'}</Text>
+            <Text style={styles.noInternetConnectionText}>{currentLang === 'pl' ? 'Oops! Coś poszło nie tak podczas próby dostępu do bazy danych. Prosimy o cierpliwość, pracujemy nad rozwiązaniem tego problemu' : 'Oops! Something went wrong while trying to access the database. Please be patient, we\'re working on resolving this issue.'}</Text>
         </View>
     )
 }

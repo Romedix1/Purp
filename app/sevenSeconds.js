@@ -8,6 +8,15 @@ import DatabaseErrorScreen from './databaseError'; // Import database error scre
 import { useFonts } from 'expo-font';
 import { readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
 import useNetInfo from './scripts/checkConnection'
+import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import function saveCounter and readCounter to saving counter value and reading counter value in local storage
+import * as FileSystem from 'expo-file-system';
+
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 function sevenSeconds() {
     // Set variable with window width using useWindowDimensions hook
@@ -106,6 +115,11 @@ function sevenSeconds() {
     const [secondDrawnPlayer, setSecondDrawnPlayer] = useState('');
     // State for tracking database errors
     const [databaseErrorStatus, setDatabaseErrorStatus] = useState(false);
+    // State to tracking when ad should be displayed
+    const [adCounter, setAdCounter] = useState(1);
+    const [counterLoaded, setCounterLoaded] = useState(false);
+    // State to tracking that ad is loaded
+    const [isAdLoaded, setIsAdLoaded] = useState(false);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
@@ -113,17 +127,6 @@ function sevenSeconds() {
     });
 
     const netInfo = useNetInfo();
-    // Fetching saved language
-    useEffect(() => {
-      const fetchData = async () => {
-        const lang = await readLanguage();
-        setCurrentLang(lang);
-  
-        setTimeout(() => setComponentLoaded(true), 50)
-      };
-  
-      fetchData(); 
-    }, []);
 
     // State for rotation animation
     const rotateValue = useState(new Animated.Value(0))[0];
@@ -136,6 +139,10 @@ function sevenSeconds() {
           // Fetching saved language
           const lang = await readLanguage();
           setCurrentLang(lang);
+          
+          const counter = await readAdCounter();
+          setAdCounter(counter);
+          setCounterLoaded(true);
 
           // Fetching saved players
           const players = await readPlayers();
@@ -143,10 +150,14 @@ function sevenSeconds() {
           // Setting that categories are loaded
           setPlayersLoaded(true);
 
-          setTimeout(() => setComponentLoaded(true), 50)
+          componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
-
-        fetchData();   
+    
+        fetchData();
+    
+        return () => {
+          clearTimeout()
+        }  
     }, []);
 
     // Randomly select a player
@@ -175,7 +186,9 @@ function sevenSeconds() {
             }, 100);
         }
 
-        return () => clearInterval(timerInterval);
+        return () => {
+          clearInterval(timerInterval);
+        }
     }, [startedTimer]);
 
     // Handle timer start/stop
@@ -201,20 +214,28 @@ function sevenSeconds() {
 
     // Fetch tasks when language changes (on load)
     useEffect(() => {
+      let firstTaskTimeout;
+      let secondTaskTimeout;
+
         async function fetchTasks() {
           if (!firstTask) {
               getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus).then(() => {
-                setTimeout(() => setTasksLoaded(true), 50)
+                firstTaskTimeout = setTimeout(() => setTasksLoaded(true), 50)
               });
             }
           if (!secondTask) {
             getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus).then(() => {
-              setTimeout(() => setTasksLoaded(true), 50)
+              secondTaskTimeout = setTimeout(() => setTasksLoaded(true), 50)
             });
           }
         }
 
         fetchTasks();
+
+        return () => {
+          clearTimeout(firstTaskTimeout)
+          clearTimeout(secondTaskTimeout)
+        }
     }, [currentLang]);
     
     useEffect(() => {
@@ -224,31 +245,83 @@ function sevenSeconds() {
         setProgressWidth((widthPercentage / 130) * windowWidth); 
     }, [timerValue, windowWidth]);
 
+    // Clear cache
+    async function clearCache() {
+      await FileSystem.deleteAsync(FileSystem.cacheDirectory, { idempotent: true });
+    }
+
+    useEffect(() => {
+    const handleAdLoaded = () => {
+      setIsAdLoaded(true);
+    };
+
+    const handleAdClosed = () => {
+      setIsAdLoaded(false);
+      setAdCounter(1)
+      clearCache();
+    };
+
+    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, handleAdLoaded);
+    const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
+
+    interstitial.load();
+
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeAdClosed();
+
+      interstitial.removeAllListeners();
+    };
+    }, []);
+
+    useEffect(() => {
+    if(!isAdLoaded)
+    {
+      interstitial.load();
+      setIsAdLoaded(true);
+    }
+
+      if (adCounter % 10 === 0) {
+        interstitial.show();
+      }
+
+    }, [adCounter]);
+
+    useEffect(() => {
+      if(counterLoaded)
+      {
+        saveAdCounter(adCounter);
+      }
+    }, [adCounter]);
+
     async function getTasks() {
+      let timerValueTimeout;
+
+        if(startedTimer)
+        {
+          setStartedTimer(false)
+        }
+
+        timerValueTimeout = setTimeout(() => setTimerValue(70), 10);
+
         setLoadingSecondTask(true);
         Animated.parallel([
           Animated.timing(rotateValue, {
             toValue: direction ? 1 : -1,
             duration: 650,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
           Animated.timing(slideValue, {
             toValue: 1,
             duration: direction ? 1 : -1,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
         ]).start(() => {
           rotateValue.setValue(0);
           slideValue.setValue(0);
-          
+
           // Changing state for the question which should be displayed
           setSecondTaskStatus(prev => !prev);
-          setTimerValue(70)
-
-          if(startedTimer)
-          {
-            setStartedTimer(false)
-          }
 
           // If the next question status is true, then get and draw the next question
           if (secondTaskStatus) {
@@ -263,7 +336,14 @@ function sevenSeconds() {
                 randPlayer();
             });
           }
+          if(counterLoaded) {
+            setAdCounter((prev) => prev+1)
+          }
         });
+
+        return () => {
+          clearTimeout(timerValueTimeout)
+        }
       }
 
       const rotateCard = rotateValue.interpolate({
@@ -281,6 +361,7 @@ function sevenSeconds() {
         onPanResponderMove: (evt, gestureState) => {
           const distance = gestureState.dx;
           const threshold = 50;
+          let taskTimeout;
       
           // Setting the direction in which the card should be discarded
           if (distance > 0) {
@@ -293,11 +374,11 @@ function sevenSeconds() {
           if (Math.abs(distance) > threshold) {
             if (!taskFetched && !loadingSecondTask) {
               setTaskFetched(true);
-              setTimeout(() => {
-                getTasks();
-              }, 10);
+              
+              taskTimeout = setTimeout(() => getTasks(), 10);
             }
           }
+          clearTimeout(taskTimeout)
         },
         onPanResponderRelease: () => {
           if (loadingSecondTask) {
@@ -317,7 +398,7 @@ function sevenSeconds() {
 
     // Display internet error screen if there is no internet connection
     if (!netInfo) {
-      return <ConnectionErrorScreen/>;
+      return <ConnectionErrorScreen />;
     }
 
     return (
@@ -328,7 +409,7 @@ function sevenSeconds() {
                 <View style={[styles.timerContainer, { backgroundColor: timerValue === 0 ? "red" : 'transparent' }]}>
                     <View style={[styles.timerFill, { width: progressWidth }]}></View>
                 </View>
-                <Text style={styles.timerValue}>{timerValue === 0 ? "Koniec czasu" : (timerValue / 10).toFixed(1)}</Text>
+                <Text style={styles.timerValue}>{timerValue === 0 ? (currentLang === "pl" ? "Koniec czasu" : "Time's up") : (timerValue / 10).toFixed(1)}</Text>
             
                 <View>
                     <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: !secondTaskStatus ? rotateCard : '0deg' }, { translateX: !secondTaskStatus ? slideCard : 0 }], zIndex: secondTaskStatus ? 1 : 2, position: 'relative' }]}>
@@ -346,11 +427,11 @@ function sevenSeconds() {
                 </View>
 
                 <TouchableOpacity onPress={handleTimer} style={[styles.buttonContainer, { top: -0.24 * windowWidth }]}>
-                    <Text style={styles.buttonText}>{startedTimer ? (currentLang === "pl" ? "Zatrzymaj odliczanie" : "qs") : (currentLang === "pl" ? "Rozpocznij odliczanie" : "Timer")}</Text>
+                    <Text style={styles.buttonText}>{startedTimer ? (currentLang === "pl" ? "Zatrzymaj odliczanie" : "Stop countdown") : (currentLang === "pl" ? "Rozpocznij odliczanie" : "Start countdown")}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity disabled={loadingSecondTask} onPress={getTasks} style={[styles.buttonContainer, { marginBottom: 0.1 * windowWidth, top: -0.19 * windowWidth }]}>
-                    <Text style={styles.buttonText}>{currentLang === "pl" ? "Nastepne zadanie" : "qs"}</Text>
+                    <Text style={styles.buttonText}>{currentLang === "pl" ? "Nastepne zadanie" : "Next task"}</Text>
                 </TouchableOpacity>
             </ScrollView>
         </View>

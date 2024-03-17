@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, PanResponder } from 'react-native';
+import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, PanResponder, Button } from 'react-native';
 import { useFonts } from 'expo-font';
 import { readLanguage } from './scripts/language'; // Import language functions
 import { readCategories } from './scripts/categories'; // Import category from local storage
@@ -8,6 +8,15 @@ import LoadingScreen from './loadingScreen'; // Import loading screen
 import DatabaseErrorScreen from './databaseError'; // Import database error screen
 import { drawACategory, drawSecondCategory, getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
 import useNetInfo from './scripts/checkConnection'
+import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { readAdCounter, saveAdCounter } from './scripts/adCounter'
+import * as FileSystem from 'expo-file-system';
+
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 function NeverHaveIEver() {
   // Set variable with window width and window height using useWindowDimensions hook
@@ -113,6 +122,11 @@ function NeverHaveIEver() {
   const [databaseErrorStatus, setDatabaseErrorStatus] = useState(false);
   // State to manage the state of the nav menu (open/close)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // State to tracking when ad should be displayed
+  const [adCounter, setAdCounter] = useState(1);
+  const [counterLoaded, setCounterLoaded] = useState(false);
+  // State to tracking that ad is loaded
+  const [isAdLoaded, setIsAdLoaded] = useState(false);
 
   // State for rotation animation
   const rotateValue = useState(new Animated.Value(0))[0];
@@ -147,23 +161,18 @@ function NeverHaveIEver() {
   });
 
   const netInfo = useNetInfo();
-  // Fetching saved language
+
+  // Fetching saved language, categories and ad counter value
   useEffect(() => {
+    let componentTimeout;
+
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
-      setTimeout(() => setComponentLoaded(true), 50)
-    };
-
-    fetchData(); 
-  }, []);
-
-  // Fetching saved language
-  useEffect(() => {
-    const fetchData = async () => {
-      const lang = await readLanguage();
-      setCurrentLang(lang);
+      const counter = await readAdCounter();
+      setAdCounter(counter);
+      setCounterLoaded(true);
 
       // Fetching saved categories from local storage
       const category = await readCategories();
@@ -171,12 +180,64 @@ function NeverHaveIEver() {
       // Setting that categories are loaded
       setCategoriesLoaded(true);
 
-      
-      setTimeout(() => setComponentLoaded(true), 50)
+      componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
 
     fetchData();
+
+    return () => {
+      clearTimeout(componentTimeout)
+    }
   }, []);
+
+  useEffect(() => {
+    if(counterLoaded)
+    {
+      saveAdCounter(adCounter);
+    }
+  }, [adCounter]);
+
+  // Clear cache
+  async function clearCache() {
+      await FileSystem.deleteAsync(FileSystem.cacheDirectory, { idempotent: true });
+  }
+  
+  useEffect(() => {
+    const handleAdLoaded = () => {
+      setIsAdLoaded(true);
+    };
+  
+    const handleAdClosed = () => {
+      setIsAdLoaded(false);
+      setAdCounter(1)
+      clearCache();
+    };
+  
+    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, handleAdLoaded);
+    const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
+
+    interstitial.load();
+  
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeAdClosed();
+
+      interstitial.removeAllListeners();
+    };
+  }, []);
+
+  useEffect(() => {
+    if(!isAdLoaded)
+    {
+      interstitial.load();
+      setIsAdLoaded(true);
+    }
+
+      if (adCounter % 10 === 0) {
+        interstitial.show();
+      }
+
+  }, [adCounter]);
 
   // Draw selected categories after load
   useEffect(() => {
@@ -188,20 +249,33 @@ function NeverHaveIEver() {
   
   // Function to load second question which should be displayed
   useEffect(() => {
+    let firstQuestionTimeout;
+    let secondQuestionTimeout;
+
     if (translatedCategory) {
       if (!firstQuestion) {
         getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus).then(() => {
-          setTimeout(() => setQuestionsLoaded(true), 50)
-          setTimeout(() => setComponentLoaded(true), 50)
-        });
+          firstQuestionTimeout = setTimeout(() => {
+            setQuestionsLoaded(true);
+            setComponentLoaded(true);
+          }, 50);
+        })
       }
+  
       if (!secondQuestion) {
         getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion, setDatabaseErrorStatus).then(() => {
-          setTimeout(() => setQuestionsLoaded(true), 50)
-          setTimeout(() => setComponentLoaded(true), 50)
+            secondQuestionTimeout = setTimeout(() => {
+              setQuestionsLoaded(true);
+              setComponentLoaded(true);
+            }, 50);
         });
       }
     }
+    
+    return () => {
+      clearTimeout(firstQuestionTimeout);
+      clearTimeout(secondQuestionTimeout);
+    };
   }, [translatedCategory]);
   
   // Fetching question and category depend on question status
@@ -222,7 +296,7 @@ function NeverHaveIEver() {
     
     fetchQuestionsAndDrawCategory();
   }, [selectedCategories]);
-  
+
   // Opening category container with animation
   const rotateArrow = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -257,17 +331,23 @@ function NeverHaveIEver() {
       if (secondQuestionStatus) {
         getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion).then(() => {
           setLoadingSecondQuestion(false);
-          drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory);
+          drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory, setDatabaseErrorStatus);
         });
       // If the second question status is false, then get and draw the second question
       } else {
-        getQuestion(translatedCategory, currentLang, setFirstQuestion).then(() => {
+        getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus).then(() => {
           setLoadingSecondQuestion(false);
           drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
         });
       }
+
+      if(counterLoaded) {
+        setAdCounter((prev) => prev+1)
+      }
     });
   }
+
+  let swipeTimeout;
 
   // Handling finger swipe functionality
   const panResponder = PanResponder.create({
@@ -275,7 +355,7 @@ function NeverHaveIEver() {
     onPanResponderMove: (evt, gestureState) => {
       const distance = gestureState.dx;
       const threshold = 50;
-  
+      
       // Setting the direction in which the card should be discarded
       if (distance > 0) {
         setDirection(true);
@@ -287,13 +367,14 @@ function NeverHaveIEver() {
       if (Math.abs(distance) > threshold) {
         if (!questionFetched && !loadingSecondQuestion) {
           setQuestionFetched(true);
-          setTimeout(() => {
+          swipeTimeout = setTimeout(() => {
             getQuestions();
           }, 10);
         }
       }
     },
     onPanResponderRelease: () => {
+      clearTimeout(swipeTimeout);
       if (loadingSecondQuestion) {
         setQuestionFetched(false);
       }
@@ -329,17 +410,16 @@ function NeverHaveIEver() {
   return (
     <View>
       <Nav isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} rotateArrow={rotateArrow} arrowRotateInterpolate={arrowRotateInterpolate} />
-  
       <ScrollView contentContainerStyle={styles.mainContainer}>
         {isCategoriesMenuOpened && <Pressable onPress={() => {toggleCategories(), rotateArrow()}} style={styles.categoriesMenuBackgroundOpacity}></Pressable>}
         <Text style={styles.displayedCategory}>{currentLang === 'pl' ? 'Kategoria: ' : 'Category: '} {secondQuestionStatus ? secondDrawnCategory : drawnCategory} </Text>
   
         <View>
           <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: !secondQuestionStatus ? rotateCard : '0deg' }, { translateX: !secondQuestionStatus ? slideCard : 0 }],  zIndex: secondQuestionStatus ? 1 : 2, position: 'relative' }]}>
-            <Text style={styles.questionText}>{firstQuestion}</Text>
+            <Text style={styles.questionText}>{firstQuestion} xd</Text>
           </Animated.View>
           <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: secondQuestionStatus ? rotateCard : '0deg' }, { translateX: secondQuestionStatus ? slideCard : 0 }], zIndex: secondQuestionStatus ? 2 : 1, position: 'absolute' }]}>
-            <Text style={styles.questionText}>{secondQuestion}</Text>
+            <Text style={styles.questionText}>{secondQuestion}  dx</Text>
           </Animated.View>
           <View style={[styles.questionBackCard, { top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#300066' }]}>
           </View>

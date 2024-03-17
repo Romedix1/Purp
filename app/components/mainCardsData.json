@@ -4,7 +4,7 @@
             {
                 "gameName": ["Nigdy", "przenigdy"],
                 "gameIcon": "neverHaveIEverIcon.png",
-                "gameRules": "Należy wyczytać pytanie podane na karcie,jeśli ktoś doświadczył takiej sytuacji musi się napić.",
+                "gameRules": "Po ukazaniu się pytania na karcie wybrana osoba powinna przeczytać je reszczie graczy. Osoba która doświadczyła wybranej sytuacji powinna się napić.",
                 "cardBackgroundColor": "#1F152E",
                 "cardNameColor": "#F113E8",
                 "cardButtonColor": "#6C1EC5",
@@ -14,7 +14,7 @@
             {
                 "gameName": ["7", "sekund"],
                 "gameIcon": "7SecondsIcon.png",
-                "gameRules": "Należy wpisać imiona graczy następnie po wylosowaniu gracza ma on 7 sekund na wykonanie zadania podanego na karcie",
+                "gameRules": "Przed rozpoczęciem gry należy wpisać graczy i następnie rozpocząć gre. Osoba która trzyma telefon powinna wyczytać zadanie aby usłyszał je każdy inny gracz a następnie kliknąć przycisk \"Rozpocznij odliczanie\" a wyczytana osoba ma 7 sekund na wykonanie zadania",
                 "cardBackgroundColor": "#001F4D",
                 "cardNameColor": "#0A6CFF",
                 "cardButtonColor": "#0536E4",
@@ -24,7 +24,7 @@
             {
                 "gameName": ["Prawda czy", "wyzwanie"],
                 "gameIcon": "TruthOrDareIcon.png",
-                "gameRules": "Należy wpisać imiona graczy, wylosowana osoba wybiera karte prawda lub wyzwanie i wykonuje zadanie albo odpowiada na pytanie.",
+                "gameRules": "Przed rozpoczęciem gry należy wpisać graczy i następnie rozpocząć gre. Po wylosowaniu gracza należy przekazać mu telefon a ten powinien wybrać \"Prawdę\" lub \"Wyzwanie\".",
                 "cardBackgroundColor": "#501212",
                 "cardNameColor": "#DD1111",
                 "cardButtonColor": "#F0000E",
@@ -36,7 +36,7 @@
             {
                 "gameName": ["Never have", "i ever"],
                 "gameIcon": "neverHaveIEverIcon.png",
-                "gameRules": "You start game by reading sentence on card then players who experienced same thing must drink",
+                "gameRules": "After the question appears on the card, the chosen person should read it to the rest of the players. The person who has experienced the chosen situation should take a sip.",
                 "cardBackgroundColor": "#1F152E",
                 "cardNameColor": "#F113E8",
                 "cardButtonColor": "#6C1EC5",
@@ -46,7 +46,7 @@
             {
                 "gameName": ["7", "seconds"],
                 "gameIcon": "7SecondsIcon.png",
-                "gameRules": "Insert player names,Choosen person has 7 seconds to preform task shown on card",
+                "gameRules": "Before starting the game, players need to enter their names and then begin the game. The person holding the phone should read the task aloud so that every other player can hear it, and then click the \"Start countdown\" button. The person who was drawn has 7 seconds to complete the task.",
                 "cardBackgroundColor": "#001F4D",
                 "cardNameColor": "#0A6CFF",
                 "cardButtonColor": "#0536E4",
@@ -56,7 +56,7 @@
             {
                 "gameName": ["Truth or", "dare"],
                 "gameIcon": "TruthOrDareIcon.png",
-                "gameRules": "Insert player names,Chosen person decides on thuth or dare card then preforms choosen task accordingly.",
+                "gameRules": "Before starting the game, players need to enter their names and then begin the game. After selecting a player, pass the phone to him/her, and he/she should choose \"Truth\" or \"Dare\".",
                 "cardBackgroundColor": "#501212",
                 "cardNameColor": "#DD1111",
                 "cardButtonColor": "#F0000E",

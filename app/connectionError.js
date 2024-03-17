@@ -47,14 +47,14 @@ function connectionError() {
             setCurrentLang(lang);
         };
 
-        fetchData(); 
+        fetchData();
     }, []);
 
     return (
         <View style={styles.noInternetConnectionContainer}>
             <Image style={styles.noInternetConnectionIcon} source={require('../assets/icons/noInternetConnectionIcon.png')}/>
-            <Text style={styles.noInternetConnectionHeader}>Brak połączenia z internetem</Text>
-            <Text style={styles.noInternetConnectionText}>Przepraszamy, ale wygląda na to, że nie masz obecnie połączenia z internetem. Prosimy o sprawdzenie swojego połączenia sieciowego i spróbowanie ponownie za chwilę.</Text>
+            <Text style={styles.noInternetConnectionHeader}>{currentLang === 'pl' ? 'Brak połączenia z internetem' : 'Internet connection lost'}</Text>
+            <Text style={styles.noInternetConnectionText}>{currentLang === 'pl' ? 'Przepraszamy, ale wygląda na to, że nie masz obecnie połączenia z internetem. Prosimy o sprawdzenie swojego połączenia sieciowego i spróbowanie ponownie za chwilę.' : 'We\'re sorry, but it seems you currently don\'t have an internet connection. Please check your network connection and try again shortly.'}</Text>
         </View>
     )
 }
