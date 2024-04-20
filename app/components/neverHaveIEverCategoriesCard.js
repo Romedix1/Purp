@@ -26,7 +26,7 @@ function neverHaveIEverCategoriesCard(props) {
       color: '#fff',
       fontFamily: 'LuckiestGuy',
       fontSize: .05 * windowWidth, 
-      lineHeight: .05 * windowWidth
+      lineHeight: .07 * windowWidth
     }
   })
 
@@ -49,8 +49,8 @@ function neverHaveIEverCategoriesCard(props) {
               return require('../../assets/icons/NeverHaveIEver/categoriesAdults.png');
             case 'categoriesEducation.png':
               return require('../../assets/icons/NeverHaveIEver/categoriesEducation.png');
-            case 'categoriesLoveLife.png':
-              return require('../../assets/icons/NeverHaveIEver/categoriesLoveLife.png');
+            case 'categoriesGeneral.png':
+              return require('../../assets/icons/NeverHaveIEver/categoriesGeneral.png');
             case 'categoriesTravels.png':
               return require('../../assets/icons/NeverHaveIEver/categoriesTravels.png');
           }

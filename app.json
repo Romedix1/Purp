@@ -11,12 +11,13 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.romedix.Purp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#782180"
+        "backgroundImage": "./assets/images/adaptive-icon-background.png"
       },
       "package": "com.romedix.Purp"
     },

@@ -70,6 +70,8 @@ function sevenSeconds() {
         borderWidth: 4, 
         paddingHorizontal: 0.05 * windowWidth,
         width: 0.78 * windowWidth,
+        textAlign: 'center',
+        justifyContent: 'center'
       },
       questionText: {
         textAlign: 'center', 
@@ -356,12 +358,13 @@ function sevenSeconds() {
         outputRange: [ -(windowWidth * 1.5), 0, windowWidth * 1.5],
       });
 
+      let taskTimeout;
+
       const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderMove: (evt, gestureState) => {
           const distance = gestureState.dx;
           const threshold = 50;
-          let taskTimeout;
       
           // Setting the direction in which the card should be discarded
           if (distance > 0) {
@@ -375,12 +378,20 @@ function sevenSeconds() {
             if (!taskFetched && !loadingSecondTask) {
               setTaskFetched(true);
               
-              taskTimeout = setTimeout(() => getTasks(), 10);
+              taskTimeout = setTimeout(() => {
+                getTasks();
+              }, 10);
             }
           }
-          clearTimeout(taskTimeout)
         },
         onPanResponderRelease: () => {
+          clearTimeout(taskTimeout);
+          if (loadingSecondTask) {
+            setTaskFetched(false);
+          }
+        },
+        onPanResponderTerminate: () => {
+          clearTimeout(taskTimeout);
           if (loadingSecondTask) {
             setTaskFetched(false);
           }
@@ -413,12 +424,15 @@ function sevenSeconds() {
             
                 <View>
                     <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: !secondTaskStatus ? rotateCard : '0deg' }, { translateX: !secondTaskStatus ? slideCard : 0 }], zIndex: secondTaskStatus ? 1 : 2, position: 'relative' }]}>
-                        <Text style={[styles.questionText, {  marginRight: 0.025 * windowWidth, color: '#07e0a3' }]}>{drawnPlayer}</Text>
-                        <Text style={styles.questionText}>{firstTask}</Text>
+                        <Text style={styles.questionText}>
+                            <Text style={[styles.questionText, {  marginRight: 0.025 * windowWidth, color: '#00E5FA' }]}>{drawnPlayer}</Text><Text> </Text>
+                            {firstTask}
+                        </Text>
                     </Animated.View>
                     <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: secondTaskStatus ? rotateCard : '0deg' }, { translateX: secondTaskStatus ? slideCard : 0 }], position: 'absolute',  zIndex: secondTaskStatus ? 2 : 1 }]}>
-                        <Text style={[styles.questionText, { marginRight: 0.025 * windowWidth, color: '#07e0a3' }]}>{secondDrawnPlayer}</Text>
-                        <Text style={styles.questionText}>{secondTask}</Text>
+                        <Text style={styles.questionText}>
+                        <Text style={[styles.questionText, { marginRight: 0.025 * windowWidth, color: '#00E5FA' }]}>{secondDrawnPlayer}</Text><Text> </Text>
+                          {secondTask}</Text>
                     </Animated.View>
                     <View style={{ width: 0.78 * windowWidth, position: 'relative', top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#002256', borderRadius: .07 * windowWidth, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: .012 * windowWidth }}>
                     </View>

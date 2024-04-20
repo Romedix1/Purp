@@ -1,14 +1,14 @@
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Function to read players from secure storage
 export const readPlayers = async () => {
-  const value = await SecureStore.getItemAsync('players');
+  const value = await AsyncStorage.getItem('players');
   return value ? JSON.parse(value) : [];
 };
 
 // Function to save players to secure storage
 export const savePlayers = async (players) => {
     const serializedPlayers = JSON.stringify(players);
-    await SecureStore.setItemAsync('players', serializedPlayers);
+    await AsyncStorage.setItem('players', serializedPlayers);
 };
   

@@ -18,8 +18,8 @@
                 "categoryName": "Edukacja"
             },
             {
-                "categoryIcon": "categoriesLoveLife.png",
-                "categoryName": "Życie miłosne"
+                "categoryIcon": "categoriesGeneral.png",
+                "categoryName": "Ogólne"
             },
             {
                 "categoryIcon": "categoriesTravels.png",
@@ -44,8 +44,8 @@
                 "categoryName": "Education"
             },
             {
-                "categoryIcon": "categoriesLoveLife.png",
-                "categoryName": "Love Life"
+                "categoryIcon": "categoriesGeneral.png",
+                "categoryName": "General"
             },
             {
                 "categoryIcon": "categoriesTravels.png",

@@ -8,9 +8,13 @@ import CardsData from './components/mainCardsData.json'; // Import game cards da
 import LoadingScreen from './loadingScreen'; // Import loading screen compoynent
 import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import useNetInfo from './scripts/checkConnection'
-
+import { StatusBar } from 'expo-status-bar';
 const Index = () => {
-  
+  // Load fonts 
+  const [fontsLoaded] = useFonts({
+    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+  });
+
   // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
 
@@ -24,11 +28,6 @@ const Index = () => {
   const [resetFlipped, setResetFlipped] = useState(false);
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
-
-  // Load fonts 
-  const [fontsLoaded] = useFonts({
-    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
-  });
   
   // Styles
   const styles = StyleSheet.create({
@@ -151,6 +150,7 @@ const Index = () => {
 
   return (
     <View>
+      <StatusBar backgroundColor='#000' style="light" />
       <Nav setCurrentLang={setCurrentLang} currentLang={currentLang} main={true}/>
 
       <View {...panResponder.panHandlers}>

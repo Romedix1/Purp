@@ -46,11 +46,6 @@ const contact = () => {
       resizeMode: 'contain',
       width: .12 * windowWidth,
       height: .12 * windowWidth,
-    },
-    aboutUs: {
-      fontFamily: 'LuckiestGuy',
-      color: '#fff',
-      fontSize: .05 * windowWidth,
     }
   });
 
@@ -132,11 +127,6 @@ const contact = () => {
               <Image style={styles.socialMediaIcon} source={require('../assets/icons/tiktokIcon.png')} />
             </Pressable>
           </View>
-        </View>
-
-        <View style={styles.boxContainer}>
-          <Text style={styles.boxHeader}>{currentLang === 'pl' ? 'O nas' : 'About us'}</Text>
-          <Text style={styles.aboutUs}>{currentLang === 'pl' ? 'Jesteśmy' : 'We are'}</Text>
         </View>
       </ScrollView>
 

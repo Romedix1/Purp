@@ -12,8 +12,8 @@ import { db } from '../../../firebaseConfig';
             return 'For Adults';
           case 'Edukacja':
             return 'Education';
-          case 'Życie miłosne':
-            return 'Love Life';
+          case 'Ogólne':
+            return 'General';
           case 'Podróże':
             return 'Travels';
           default:

@@ -17,7 +17,9 @@ export default function Nav(props) {
       zIndex: 3, 
       position: 'relative',
       paddingHorizontal: .05 * windowWidth, 
-      paddingVertical: .05 * windowWidth
+      paddingVertical: .05 * windowWidth,
+      // paddingBottom: .05 * windowWidth,
+      // paddingTop: .025 * windowWidth
     },
     currentFlag: {
       width: .12 * windowWidth, 

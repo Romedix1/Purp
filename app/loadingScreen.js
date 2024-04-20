@@ -13,11 +13,6 @@ function loadingScreen() {
             alignItems: 'center',
             backgroundColor: '#1E0041',
         },
-        loadingScreenHeader: {
-            fontFamily: 'LuckiestGuy',
-            color: "#fff",
-            fontSize: .15 * windowWidth, 
-        }
     })
 
     // Define state for logo scale animation
@@ -56,7 +51,6 @@ function loadingScreen() {
     return (
         <View style={styles.loadingScreenContainer}>
             <Animated.Image style={{ transform: [{ scale: logoScale }] }} source={require('../assets/icons/logo.png')}/>
-            <Text style={styles.loadingScreenHeader}>Purp</Text>
         </View>
     )
 }

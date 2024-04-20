@@ -20,7 +20,7 @@ const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
 
 function NeverHaveIEver() {
   // Set variable with window width and window height using useWindowDimensions hook
-  const { width: windowWidth,  height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   const styles = StyleSheet.create({
     mainContainer: {
@@ -236,14 +236,13 @@ function NeverHaveIEver() {
       if (adCounter % 10 === 0) {
         interstitial.show();
       }
-
   }, [adCounter]);
 
   // Draw selected categories after load
   useEffect(() => {
     if (selectedCategories.length > 0) {
-        drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
-        drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory);
+      drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
+      drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory);
     }
   }, [categoriesLoaded]);
   
@@ -379,6 +378,13 @@ function NeverHaveIEver() {
         setQuestionFetched(false);
       }
     },
+
+    onPanResponderTerminate: () => {
+      clearTimeout(swipeTimeout);
+      if (loadingSecondQuestion) {
+        setQuestionFetched(false);
+      }
+    },
   });
   
   // Opening category container with animation
@@ -416,10 +422,10 @@ function NeverHaveIEver() {
   
         <View>
           <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: !secondQuestionStatus ? rotateCard : '0deg' }, { translateX: !secondQuestionStatus ? slideCard : 0 }],  zIndex: secondQuestionStatus ? 1 : 2, position: 'relative' }]}>
-            <Text style={styles.questionText}>{firstQuestion} xd</Text>
+            <Text style={styles.questionText}>{firstQuestion}</Text>
           </Animated.View>
           <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: secondQuestionStatus ? rotateCard : '0deg' }, { translateX: secondQuestionStatus ? slideCard : 0 }], zIndex: secondQuestionStatus ? 2 : 1, position: 'absolute' }]}>
-            <Text style={styles.questionText}>{secondQuestion}  dx</Text>
+            <Text style={styles.questionText}>{secondQuestion}</Text>
           </Animated.View>
           <View style={[styles.questionBackCard, { top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#300066' }]}>
           </View>
