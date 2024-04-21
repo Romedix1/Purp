@@ -5,6 +5,7 @@ import { readLanguage } from './scripts/language'; // Import language functions
 import { useFonts } from "expo-font";
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import useNetInfo from './scripts/checkConnection'
+import { StatusBar } from 'expo-status-bar';
 
 const contact = () => {
   // Set variable with window width using useWindowDimensions hook
@@ -105,6 +106,7 @@ const contact = () => {
 
   return (
     <View>
+      <StatusBar backgroundColor='#000' style="light" />
       <Nav contact={true} currentLang={currentLang}/>
       <ScrollView contentContainerStyle={styles.mainContainer}>
         <View style={[styles.boxContainer, { marginTop: .13 * windowWidth }]}>

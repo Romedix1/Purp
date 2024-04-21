@@ -11,6 +11,7 @@ import useNetInfo from './scripts/checkConnection'
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { readAdCounter, saveAdCounter } from './scripts/adCounter'
 import * as FileSystem from 'expo-file-system';
+import { StatusBar } from 'expo-status-bar';
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
 
@@ -49,16 +50,17 @@ function NeverHaveIEver() {
       borderColor: '#FFF',
       width: .78 * windowWidth, 
       marginTop: .1 * windowWidth, 
-      borderWidth: .009 * windowWidth, 
+      borderWidth: .009 * windowWidth,
+      minHeight: 1.05 * windowWidth,
+      paddingTop: .15 * windowWidth, 
+      paddingHorizontal: .05 * windowWidth
     },
     questionText: {
       textAlign: 'center', 
       fontFamily: 'LuckiestGuy', 
       color: '#FFF',
       fontSize: .08 * windowWidth,
-      paddingVertical: .07 * windowWidth, 
-      height: 1.05 * windowWidth, 
-      paddingHorizontal: .05 * windowWidth
+
     },
     questionBackCard: {
       width: .78 * windowWidth, 
@@ -415,6 +417,7 @@ function NeverHaveIEver() {
 
   return (
     <View>
+      <StatusBar backgroundColor='#000' style="light" />
       <Nav isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} rotateArrow={rotateArrow} arrowRotateInterpolate={arrowRotateInterpolate} />
       <ScrollView contentContainerStyle={styles.mainContainer}>
         {isCategoriesMenuOpened && <Pressable onPress={() => {toggleCategories(), rotateArrow()}} style={styles.categoriesMenuBackgroundOpacity}></Pressable>}

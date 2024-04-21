@@ -6,6 +6,7 @@ import LoadingScreen from './loadingScreen'; // Import loading screen component
 import { savePlayers, readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
 import { ScrollView } from 'react-native';
 import useNetInfo from './scripts/checkConnection'
+import { StatusBar } from 'expo-status-bar';
 
 function sevenSecondsGameAddPlayers() {
     // Set current language (default is english)
@@ -62,6 +63,7 @@ function sevenSecondsGameAddPlayers() {
 
     return (
         <ScrollView>
+            <StatusBar backgroundColor='#000' style="light" />
             <Nav currentLang={currentLang} main={false} contact={false} />
 
             <PlayersSelection players={players} setPlayers={setPlayers} currentLang={currentLang} setPlayersLoaded={setPlayersLoaded} game={"truthOrDare"} />

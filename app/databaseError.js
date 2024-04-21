@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Image, useWindowDimensions } from 'react-native';
 import { useFonts } from "expo-font";
 import { readLanguage } from './scripts/language'; // Import language functions
+import { StatusBar } from 'expo-status-bar';
 
 function databaseError() {
     // Set variable with window width and window height using useWindowDimensions hook
@@ -56,6 +57,7 @@ function databaseError() {
 
     return (
         <View style={styles.noInternetConnectionContainer}>
+            <StatusBar backgroundColor='#1E0041' style="light" />
             <Image style={styles.noInternetConnectionIcon} source={require('../assets/icons/databaseErrorIcon.png')}/>
             <Text style={styles.noInternetConnectionHeader}>{currentLang === 'pl' ? 'Błąd połączenia z bazą danych' : 'Database connection error'}</Text>
             <Text style={styles.noInternetConnectionText}>{currentLang === 'pl' ? 'Oops! Coś poszło nie tak podczas próby dostępu do bazy danych. Prosimy o cierpliwość, pracujemy nad rozwiązaniem tego problemu' : 'Oops! Something went wrong while trying to access the database. Please be patient, we\'re working on resolving this issue.'}</Text>

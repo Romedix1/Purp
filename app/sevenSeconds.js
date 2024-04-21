@@ -11,6 +11,7 @@ import useNetInfo from './scripts/checkConnection'
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import function saveCounter and readCounter to saving counter value and reading counter value in local storage
 import * as FileSystem from 'expo-file-system';
+import { StatusBar } from 'expo-status-bar';
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
 
@@ -51,7 +52,7 @@ function sevenSeconds() {
         backgroundColor: '#0536E4',
         width: '80%',
         paddingVertical: .012 * windowWidth,
-        borderRadius: .048 * windowWidth,
+        borderRadius: .035 * windowWidth,
         textAlign: 'center',
         position: 'relative',
       },
@@ -63,15 +64,14 @@ function sevenSeconds() {
       },
       questionContainer: {
         backgroundColor: '#0A3C88', 
-        borderRadius: .07 * windowWidth,
+        borderRadius: .09 * windowWidth,
         borderColor: '#FFF',
-        flexDirection: 'row',  
-        marginTop: 0.05 * windowWidth, 
-        borderWidth: 4, 
-        paddingHorizontal: 0.05 * windowWidth,
-        width: 0.78 * windowWidth,
-        textAlign: 'center',
-        justifyContent: 'center'
+        width: .78 * windowWidth, 
+        marginTop: .1 * windowWidth, 
+        borderWidth: .009 * windowWidth,
+        minHeight: 1.05 * windowWidth,
+        paddingTop: .1 * windowWidth, 
+        paddingHorizontal: .05 * windowWidth
       },
       questionText: {
         textAlign: 'center', 
@@ -79,7 +79,6 @@ function sevenSeconds() {
         color: '#FFF',
         fontSize: 0.08 * windowWidth, 
         paddingVertical: 0.07 * windowWidth, 
-        minHeight: 1.05 * windowWidth,
       },
   });
 
@@ -122,6 +121,12 @@ function sevenSeconds() {
     const [counterLoaded, setCounterLoaded] = useState(false);
     // State to tracking that ad is loaded
     const [isAdLoaded, setIsAdLoaded] = useState(false);
+    // Array with players who can't be currently drawn
+    const [safePlayers, setSafePlayers] = useState([]);
+    // State for tracking round number
+    const [currentRound, setCurrentRound] = useState(1);
+    // State for tracking when player should be removed from array
+    const [safePlayersStatus, setSafePlayersStatus] = useState(false);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
@@ -166,7 +171,7 @@ function sevenSeconds() {
     useEffect(() => {
         if (players.length > 0) {
           randPlayer();
-          randSecondPlayer();
+          randSecondPlayer()
         }
       }, [playersLoaded]);
 
@@ -198,20 +203,63 @@ function sevenSeconds() {
         setStartedTimer(prev => !prev);
     };
 
+    let numberOfRounds;
+    if (players.length >= 2 && players.length <= 4) {
+        numberOfRounds = 2;
+    } else if (players.length >= 5 && players.length <= 7) {
+        numberOfRounds = 3;
+    } else if (players.length >= 8 && players.length <= 10) {
+        numberOfRounds = 4;
+    } else if(players.length > 10) {
+        numberOfRounds = 5;
+    }
+
     // Function to select a random player
     function randPlayer() {
-        let playersArrayLength = players.length;
-        let randomPlayer = Math.floor(Math.random() * playersArrayLength);
+        let randomPlayer;
+        do {
+          let playersArrayLength = players.length;
+          randomPlayer = Math.floor(Math.random() * playersArrayLength);
 
+          
+        } while(safePlayers.includes(players[randomPlayer]))
+
+        if(currentRound == numberOfRounds) {
+          setSafePlayersStatus(true)
+        }
+
+        if(safePlayersStatus) {
+          safePlayers.shift()
+        }
+
+        setSafePlayers([...safePlayers, players[randomPlayer]]);
         setDrawnPlayer(players[randomPlayer]);
+        console.log(safePlayers);
+
     }
 
     // Function to select a second random player
     function randSecondPlayer() {
+      let randomPlayer;
+      do {
         let playersArrayLength = players.length;
-        let randomPlayer = Math.floor(Math.random() * playersArrayLength);
+        randomPlayer = Math.floor(Math.random() * playersArrayLength);
 
-        setSecondDrawnPlayer(players[randomPlayer]);
+        
+      } while(safePlayers.includes(players[randomPlayer]))
+
+      if(currentRound == numberOfRounds) {
+        setSafePlayersStatus(true)
+      }
+
+      if(safePlayersStatus) {
+        safePlayers.shift()
+      }
+
+      setSafePlayers([...safePlayers, players[randomPlayer]]);
+      setSecondDrawnPlayer(players[randomPlayer]);
+      console.log(safePlayers);
+    
     }
 
     // Fetch tasks when language changes (on load)
@@ -297,7 +345,12 @@ function sevenSeconds() {
     }, [adCounter]);
 
     async function getTasks() {
-      let timerValueTimeout;
+        let timerValueTimeout;
+
+        setCurrentRound(prev => prev+1);
+        if(currentRound==numberOfRounds) {
+          setCurrentRound(1);
+        }
 
         if(startedTimer)
         {
@@ -414,6 +467,7 @@ function sevenSeconds() {
 
     return (
         <View>
+            <StatusBar backgroundColor='#000' style="light" />
             <Nav currentLang={currentLang} main={false} contact={false} />
 
             <ScrollView contentContainerStyle={styles.mainContainer}>

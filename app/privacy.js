@@ -6,6 +6,7 @@ import { useFonts } from "expo-font";
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import useNetInfo from './scripts/checkConnection'
 import * as FileSystem from 'expo-file-system';
+import { StatusBar } from 'expo-status-bar';
 
 const aboutApp = () => {
   // Set variable with window width using useWindowDimensions hook
@@ -119,6 +120,7 @@ const aboutApp = () => {
   
   return (
     <View>
+      <StatusBar backgroundColor='#000' style="light" />
       <Nav contact={false} currentLang={currentLang}/>
       
       <ScrollView contentContainerStyle={styles.mainContainer}>

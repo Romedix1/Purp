@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, useWindowDimensions, Animated, Easing} from 'react-native';
+import { View, StyleSheet, useWindowDimensions, Animated, Easing} from 'react-native';
 import { useFonts } from "expo-font";
+import { StatusBar } from 'expo-status-bar';
 
 function loadingScreen() {
     // Set variable with window width and window height using useWindowDimensions hook
@@ -32,13 +33,13 @@ function loadingScreen() {
         Animated.sequence([
             Animated.timing(logoScale, {
                 toValue: .0019 * windowWidth,
-                duration: 600,
+                duration: 800,
                 easing: Easing.linear,
                 useNativeDriver: true,
             }),
             Animated.timing(logoScale, {
                 toValue: .0012 * windowWidth,
-                duration: 600,
+                duration: 800,
                 easing: Easing.linear,
                 useNativeDriver: true,
             }),
@@ -50,6 +51,7 @@ function loadingScreen() {
 
     return (
         <View style={styles.loadingScreenContainer}>
+            <StatusBar backgroundColor='#1E0041' style="light" />
             <Animated.Image style={{ transform: [{ scale: logoScale }] }} source={require('../assets/icons/logo.png')}/>
         </View>
     )

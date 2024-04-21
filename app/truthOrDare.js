@@ -11,6 +11,7 @@ import useNetInfo from './scripts/checkConnection'
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import function saveCounter and readCounter to saving counter value and reading counter value in local storage
 import * as FileSystem from 'expo-file-system';
+import { StatusBar } from 'expo-status-bar';
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
 
@@ -36,11 +37,15 @@ function TruthOrDare() {
             width: '100%',
             borderColor: '#fff',
             borderWidth: .006 * windowWidth,
-            height: 0.9 * windowWidth
-          },
+            height: 0.9 * windowWidth,
+            borderRadius: .09 * windowWidth,
+        },
         currentPlayerContainer: {
             flexDirection: 'row',
+            flexWrap: 'wrap',
             marginTop: 0.075 * windowWidth,
+            width: '100%',
+            justifyContent: 'center'
         },
         currentPlayer: {
             fontFamily: 'LuckiestGuy',
@@ -79,7 +84,9 @@ function TruthOrDare() {
             position: 'absolute',
             backfaceVisibility: 'hidden',
             height: 0.9 * windowWidth, 
-            paddingTop: .04 * windowWidth
+            paddingTop: .04 * windowWidth,
+            paddingHorizontal: .035 * windowWidth,
+            paddingTop: .15 * windowWidth, 
         }, 
         buttonContainer: {
             backgroundColor: '#6C1EC5',
@@ -135,6 +142,12 @@ function TruthOrDare() {
     const [counterLoaded, setCounterLoaded] = useState(false);
     // State to tracking that ad is loaded
     const [isAdLoaded, setIsAdLoaded] = useState(false);
+    // Array with players who can't be currently drawn
+    const [safePlayers, setSafePlayers] = useState([]);
+    // State for tracking round number
+    const [currentRound, setCurrentRound] = useState(1);
+    // State for tracking when player should be removed from array
+    const [safePlayersStatus, setSafePlayersStatus] = useState(false);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
@@ -211,15 +224,42 @@ function TruthOrDare() {
 
     // Effect to randomly select a player when the list of players changes
     useEffect(() => {
-        randPlayer()
+        if (players.length > 0) {
+            randPlayer();
+          }
     }, [players])
+
+    let numberOfRounds;
+    if (players.length >= 2 && players.length <= 4) {
+        numberOfRounds = 2;
+    } else if (players.length >= 5 && players.length <= 7) {
+        numberOfRounds = 3;
+    } else if (players.length >= 8 && players.length <= 10) {
+        numberOfRounds = 4;
+    } else if(players.length > 10) {
+        numberOfRounds = 5;
+    }
 
     // Function to randomly select a player from the list
     function randPlayer() {
-        let playersArrayLength = players.length;
-        let randomPlayer = Math.floor(Math.random() * playersArrayLength);
+        let randomPlayer;
+        do {
+          let playersArrayLength = players.length;
+          randomPlayer = Math.floor(Math.random() * playersArrayLength);
+        } while(safePlayers.includes(players[randomPlayer]))
 
+        if(currentRound == numberOfRounds) {
+          setSafePlayersStatus(true)
+        }
+
+        if(safePlayersStatus) {
+          safePlayers.shift()
+        }
+
+        setSafePlayers([...safePlayers, players[randomPlayer]]);
         setDrawnPlayer(players[randomPlayer]);
+
+        console.log(safePlayers);
     }
 
     // Function to discard the "Truth" card
@@ -319,6 +359,15 @@ function TruthOrDare() {
     }
 
     async function returnCards() {
+        randPlayer();
+
+        console.log(currentRound)
+
+        setCurrentRound(prev => prev+1);
+        if(currentRound==numberOfRounds) {
+          setCurrentRound(1);
+        }
+
         if (selectedCard === 'Dare') {
             setTruthCardVisibility(true);
             Animated.parallel([
@@ -508,14 +557,13 @@ function TruthOrDare() {
     useEffect(() => {
         if(counterLoaded)
         {
-        saveAdCounter(adCounter);
+            saveAdCounter(adCounter);
         }
     }, [adCounter]);
 
     // Update ad counter value after question changed
     useEffect(() => {
         if(counterLoaded) {
-            console.log(adCounter)
             setAdCounter((prev) => prev+1)
         }
     }, [selectedCard])
@@ -537,6 +585,7 @@ function TruthOrDare() {
 
     return (
         <View>
+            <StatusBar backgroundColor='#000' style="light" />
             <Nav currentLang={currentLang} main={false}/>
             <ScrollView contentContainerStyle={[styles.mainContainer]}>
                 <View style={[styles.currentPlayerContainer, { display: selectedCard !== '' ? 'none' : 'block'}]}>

@@ -9,6 +9,7 @@ import LoadingScreen from './loadingScreen'; // Import loading screen compoynent
 import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import useNetInfo from './scripts/checkConnection'
 import { StatusBar } from 'expo-status-bar';
+
 const Index = () => {
   // Load fonts 
   const [fontsLoaded] = useFonts({

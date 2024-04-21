@@ -9,6 +9,7 @@ import ConnectionErrorScreen from './connectionError'; // Import connection erro
 import { Link } from 'expo-router';
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import useNetInfo from './scripts/checkConnection'
+import { StatusBar } from 'expo-status-bar';
 
 function neverHaveIEverCategories() {
   // Set variable with window width
@@ -132,6 +133,7 @@ function neverHaveIEverCategories() {
 
   return (
     <View>
+        <StatusBar backgroundColor='#000' style="light" />
         <Nav currentLang={currentLang} main={false} />
         <View style={styles.categoriesContainer}>
             <Text style={styles.categoriesHeader}>{currentLang === 'pl' ? 'Wybierz kategorie do gry' : 'Select a categories for the game'}</Text>

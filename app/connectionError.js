@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Image, useWindowDimensions } from 'react-native';
 import { useFonts } from "expo-font";
 import { readLanguage } from './scripts/language'; // Import language functions
+import { StatusBar } from 'expo-status-bar';
 
 function connectionError() {
     // Set variable with window width and window height using useWindowDimensions hook
@@ -52,6 +53,7 @@ function connectionError() {
 
     return (
         <View style={styles.noInternetConnectionContainer}>
+            <StatusBar backgroundColor='#1E0041' style="light" />
             <Image style={styles.noInternetConnectionIcon} source={require('../assets/icons/noInternetConnectionIcon.png')}/>
             <Text style={styles.noInternetConnectionHeader}>{currentLang === 'pl' ? 'Brak połączenia z internetem' : 'Internet connection lost'}</Text>
             <Text style={styles.noInternetConnectionText}>{currentLang === 'pl' ? 'Przepraszamy, ale wygląda na to, że nie masz obecnie połączenia z internetem. Prosimy o sprawdzenie swojego połączenia sieciowego i spróbowanie ponownie za chwilę.' : 'We\'re sorry, but it seems you currently don\'t have an internet connection. Please check your network connection and try again shortly.'}</Text>
