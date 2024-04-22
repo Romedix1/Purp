@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions, Image, ScrollView, TextInput, KeyboardAvoidingView, TouchableOpacity, Pressable } from 'react-native';
 import { useFonts } from "expo-font"; 
 import { Link } from 'expo-router';
-import { FlatList } from 'react-native-gesture-handler';
 
 function playersSelection(props) {
     // Set variable with window width and window height using useWindowDimensions hook

@@ -216,6 +216,16 @@ function sevenSeconds() {
 
     // Function to select a random player
     function randPlayer() {
+        if(currentRound == numberOfRounds) {
+          setSafePlayersStatus(true)
+        }
+        
+        if(safePlayersStatus) {
+          if(!players.length === 2) {
+            safePlayers.shift()
+          }
+        }
+ 
         let randomPlayer;
         do {
           let playersArrayLength = players.length;
@@ -224,22 +234,28 @@ function sevenSeconds() {
           
         } while(safePlayers.includes(players[randomPlayer]))
 
-        if(currentRound == numberOfRounds) {
-          setSafePlayersStatus(true)
+        
+        if(players.length === 2) {
+          setSafePlayers([players[randomPlayer]])
+        } else if(players.length !== 1) {
+          setSafePlayers([...safePlayers, players[randomPlayer]]);
         }
 
-        if(safePlayersStatus) {
-          safePlayers.shift()
-        }
-
-        setSafePlayers([...safePlayers, players[randomPlayer]]);
         setDrawnPlayer(players[randomPlayer]);
-        console.log(safePlayers);
-
     }
 
     // Function to select a second random player
     function randSecondPlayer() {
+      if(currentRound == numberOfRounds) {
+        setSafePlayersStatus(true)
+      }
+
+      if(safePlayersStatus) {
+        if(!players.length === 2) {
+          safePlayers.shift()
+        }
+      }
+
       let randomPlayer;
       do {
         let playersArrayLength = players.length;
@@ -248,18 +264,13 @@ function sevenSeconds() {
         
       } while(safePlayers.includes(players[randomPlayer]))
 
-      if(currentRound == numberOfRounds) {
-        setSafePlayersStatus(true)
+      if(players.length === 2) {
+        setSafePlayers([players[randomPlayer]])
+      } else if(players.length !== 1) {
+        setSafePlayers([...safePlayers, players[randomPlayer]]);
       }
 
-      if(safePlayersStatus) {
-        safePlayers.shift()
-      }
-
-      setSafePlayers([...safePlayers, players[randomPlayer]]);
       setSecondDrawnPlayer(players[randomPlayer]);
-      console.log(safePlayers);
-    
     }
 
     // Fetch tasks when language changes (on load)
@@ -347,9 +358,10 @@ function sevenSeconds() {
     async function getTasks() {
         let timerValueTimeout;
 
-        setCurrentRound(prev => prev+1);
         if(currentRound==numberOfRounds) {
           setCurrentRound(1);
+        } else {
+          setCurrentRound(prev => prev+1);
         }
 
         if(startedTimer)

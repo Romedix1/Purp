@@ -5,7 +5,6 @@ import { readLanguage } from './scripts/language'; // Import language functions
 import { useFonts } from "expo-font";
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import useNetInfo from './scripts/checkConnection'
-import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
 const aboutApp = () => {

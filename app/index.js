@@ -4,13 +4,15 @@ import Nav from './components/nav'; // Import Nav component
 import { useFonts } from "expo-font";
 import Cards from './components/mainCards'; // Import game cards component
 import { readLanguage, saveLanguage } from './scripts/language'; // Import language functions
+import { readTerms } from './scripts/terms'; // Import language functions
 import CardsData from './components/mainCardsData.json'; // Import game cards data component
-import LoadingScreen from './loadingScreen'; // Import loading screen compoynent
+import LoadingScreen from './loadingScreen'; // Import loading screen component
+import TermsScreen from './termsScreen'; // Import terms screen component
 import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import useNetInfo from './scripts/checkConnection'
 import { StatusBar } from 'expo-status-bar';
 
-const Index = () => {
+const index = () => {
   // Load fonts 
   const [fontsLoaded] = useFonts({
     'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
@@ -29,6 +31,8 @@ const Index = () => {
   const [resetFlipped, setResetFlipped] = useState(false);
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
+  // State for tracking the acceptance status of the terms and conditions
+  const [terms, setTerms] = useState(false);
   
   // Styles
   const styles = StyleSheet.create({
@@ -80,6 +84,9 @@ const Index = () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
+      const terms = await readTerms();
+      setTerms(terms);
+
       componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
 
@@ -116,10 +123,11 @@ const Index = () => {
     // If card is flipped reset flipped status
     flipped && setResetFlipped(true);
   };
-    // If font isn't loaded then return null.
-    if (!fontsLoaded && !componentLoaded) {
-      return null;
-    }
+  
+  // If font isn't loaded then return null.
+  if (!fontsLoaded && !componentLoaded) {
+    return null;
+  }
 
   // Changing current game by finger swipe
   const panResponder = PanResponder.create({
@@ -141,18 +149,23 @@ const Index = () => {
 
   // Display loading screen if component or fonts are not loaded
   if (!fontsLoaded || !componentLoaded) {
-    return <LoadingScreen/>;
+    return <LoadingScreen />;
   }
 
   // Display internet error screen if there is no internet connection
   if (!netInfo) {
-    return <ConnectionErrorScreen/>;
+    return <ConnectionErrorScreen />;
+  }
+  
+  // Display terms screen if there aren't accepted
+  if (!terms && componentLoaded) {
+    return <TermsScreen />;
   }
 
   return (
     <View>
       <StatusBar backgroundColor='#000' style="light" />
-      <Nav setCurrentLang={setCurrentLang} currentLang={currentLang} main={true}/>
+      <Nav setCurrentLang={setCurrentLang} currentLang={currentLang} main={true} />
 
       <View {...panResponder.panHandlers}>
         <ScrollView contentContainerStyle={styles.mainContainer}>
@@ -171,4 +184,4 @@ const Index = () => {
   );
 }
 
-export default Index;
+export default index;

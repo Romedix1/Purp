@@ -242,24 +242,31 @@ function TruthOrDare() {
 
     // Function to randomly select a player from the list
     function randPlayer() {
-        let randomPlayer;
-        do {
-          let playersArrayLength = players.length;
-          randomPlayer = Math.floor(Math.random() * playersArrayLength);
-        } while(safePlayers.includes(players[randomPlayer]))
-
         if(currentRound == numberOfRounds) {
-          setSafePlayersStatus(true)
-        }
-
-        if(safePlayersStatus) {
-          safePlayers.shift()
-        }
-
-        setSafePlayers([...safePlayers, players[randomPlayer]]);
-        setDrawnPlayer(players[randomPlayer]);
-
-        console.log(safePlayers);
+            setSafePlayersStatus(true)
+          }
+    
+          if(safePlayersStatus) {
+            if(!players.length === 2) {
+              safePlayers.shift()
+            }
+          }
+    
+          let randomPlayer;
+          do {
+            let playersArrayLength = players.length;
+            randomPlayer = Math.floor(Math.random() * playersArrayLength);
+    
+            
+          } while(safePlayers.includes(players[randomPlayer]))
+    
+          if(players.length === 2) {
+            setSafePlayers([players[randomPlayer]])
+          } else if(players.length !== 1) {
+            setSafePlayers([...safePlayers, players[randomPlayer]]);
+          }
+    
+          setDrawnPlayer(players[randomPlayer]);
     }
 
     // Function to discard the "Truth" card
@@ -361,9 +368,12 @@ function TruthOrDare() {
     async function returnCards() {
         randPlayer();
 
-        console.log(currentRound)
+        if(currentRound==numberOfRounds) {
+            setCurrentRound(1);
+        } else {
+            setCurrentRound(prev => prev+1);
+        }
 
-        setCurrentRound(prev => prev+1);
         if(currentRound==numberOfRounds) {
           setCurrentRound(1);
         }

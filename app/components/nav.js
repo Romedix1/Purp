@@ -18,8 +18,6 @@ export default function Nav(props) {
       position: 'relative',
       paddingHorizontal: .05 * windowWidth, 
       paddingVertical: .05 * windowWidth,
-      // paddingBottom: .05 * windowWidth,
-      // paddingTop: .025 * windowWidth
     },
     currentFlag: {
       width: .12 * windowWidth, 
@@ -151,9 +149,11 @@ export default function Nav(props) {
       }
 
       {/* If it's the contact page, display about app link otherwise, display contact link */}
+      {props.contact !== 'none' && (
       <Link href={props.contact ? '/privacy' : '/contact'} style={styles.navRightText}>
         {props.contact ? (props.currentLang === 'pl' ? 'O aplikacji' : 'About app') : (props.currentLang === 'pl' ? 'Kontakt' : 'Contact')}
       </Link>
+      )}
     </View>
   );
 }
