@@ -10,23 +10,23 @@ function neverHaveIEverCategoriesCard(props) {
     categoriesCardContainer: {
       backgroundColor: '#41008B',
       alignItems: 'center',
-      width: '46%',
+      width: props.isTablet ? '31%' : '46%',
       aspectRatio: 1,
       borderRadius: 0.05 * windowWidth,
       borderWidth: 0.007 * windowWidth,
-      paddingVertical: .04 * windowWidth 
+      paddingVertical: props.isTablet ? .035 * windowWidth :  .04 * windowWidth 
     },
     categoryCardIcon: {
-      marginBottom: .05 * windowWidth,
+      marginBottom: props.isTablet ? .02 * windowWidth : .05 * windowWidth,
       resizeMode: 'contain',
-      height: .15 * windowWidth
+      height: props.isTablet ? .1 * windowWidth : .15 * windowWidth
     },
     categoryCardText: {
       textAlign: 'center',
       color: '#fff',
       fontFamily: 'LuckiestGuy',
-      fontSize: .05 * windowWidth, 
-      lineHeight: .07 * windowWidth
+      fontSize: props.isTablet ? .035 * windowWidth : .05 * windowWidth, 
+      lineHeight: props.isTablet ? .045 * windowWidth : .07 * windowWidth
     }
   })
 

@@ -15,31 +15,32 @@ function playersSelection(props) {
         mainHeader: {
             fontFamily: 'LuckiestGuy',
             color: '#fff',
-            fontSize: .12 * windowWidth, 
+            fontSize: props.isTablet ? .08 * windowWidth : .12 * windowWidth, 
         },
         playersListContainer: {
             marginTop: .03 * windowWidth, 
-            height: .4 * windowHeight
+            height: props.isTablet ? .6 * windowWidth : .4 * windowHeight
         },
         playerContainer: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            borderRadius: 0.036 * windowWidth,
+            borderRadius: props.isTablet ? .03 * windowWidth : 0.036 * windowWidth,
             paddingHorizontal: .03 * windowWidth, 
-            width: .75 * windowWidth,
-            paddingVertical: .005 * windowWidth, 
-            marginTop: .03 * windowWidth
+            width: props.isTablet ? .7 * windowWidth : .75 * windowWidth,
+            paddingVertical: props.isTablet ? .01 * windowWidth : .02 * windowWidth, 
+            marginTop: props.isTablet ? .02 * windowWidth : .03 * windowWidth
         },
         playerText: {
             fontFamily: 'LuckiestGuy',
             color: '#fff',
-            fontSize: .065 * windowWidth, 
-            width: .59 * windowWidth,
+            fontSize: props.isTablet ? .055 * windowWidth :  .065 * windowWidth, 
+            width: props.isTablet ? .47 * windowWidth : .59 * windowWidth,
         },
         deletePlayerIcon: {
             resizeMode: 'contain',
             width: .09 * windowWidth, 
+            height: props.isTablet ? .07 * windowWidth : .09 * windowWidth, 
         },
         inputContainer: {
             flexDirection: 'row',
@@ -49,10 +50,14 @@ function playersSelection(props) {
         playerInput: {
             backgroundColor: '#fff',
             color: '#fff',
-            width: '80%',
+            width: props.isTablet ? '70%' : '80%',
             borderRadius: 99999,
             color: '#000',
             fontFamily: 'LuckiestGuy',
+            paddingLeft: props.isTablet ? .04 * windowWidth : .05 * windowWidth, 
+            paddingRight: .12 * windowWidth, 
+            paddingVertical: props.isTablet ? .02 * windowWidth : .025 * windowWidth, 
+            fontSize: props.isTablet ? .035 * windowWidth : .055 * windowWidth 
         },
         addPlayerIconContainer: {
             position: 'absolute',
@@ -60,10 +65,10 @@ function playersSelection(props) {
         },
         addPlayerIcon: {
             resizeMode: 'contain',
-            width: .12 * windowWidth, 
+            width: props.isTablet ? .09 * windowWidth : .12 * windowWidth, 
         },
         buttonContainer: {
-            width: '80%',
+            width: props.isTablet ? '70%' : '80%',
             textAlign: 'center',
             borderRadius: .03 * windowWidth,
             marginBottom: .2 * windowWidth,
@@ -71,17 +76,17 @@ function playersSelection(props) {
         },
         buttonText: {
             textAlign: 'center',
-            fontSize: .08 * windowWidth,
+            fontSize: props.isTablet ? .05 * windowWidth : .08 * windowWidth,
             fontFamily: 'LuckiestGuy',
             color: '#fff',
             paddingVertical: .005 * windowWidth
         },
         inputError: {
             color: '#E40000',
-            width: '90%',
+            width: props.isTablet ? '80%' : '90%',
             textAlign: 'center',
             fontFamily: 'LuckiestGuy',
-            fontSize: .045 * windowWidth, 
+            fontSize: props.isTablet ? .03 * windowWidth : .045 * windowWidth, 
             marginTop: .035 * windowWidth
         }
     })
@@ -113,8 +118,8 @@ function playersSelection(props) {
 
     return (
         <KeyboardAvoidingView style={styles.mainContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-            <Text style={[ styles.mainHeader, { marginTop: .09 * windowWidth }]}>{props.currentLang === 'pl' ? 'Wprowadź' : 'Insert'}</Text>
-            <Text style={[ styles.mainHeader, { color: props.game==="sevenSeconds" ? '#0A6CFF' : '#EB1010', lineHeight: .135 * windowWidth }]}>{props.currentLang === 'pl' ? 'Graczy' : 'Players'}</Text>
+            <Text style={[ styles.mainHeader, { marginTop: props.isTablet ? .065 * windowWidth : .09 * windowWidth }]}>{props.currentLang === 'pl' ? 'Wprowadź' : 'Insert'}</Text>
+            <Text style={[ styles.mainHeader, { color: props.game==="sevenSeconds" ? '#0A6CFF' : '#EB1010', lineHeight: props.isTablet ? .095 * windowWidth : .135 * windowWidth }]}>{props.currentLang === 'pl' ? 'Graczy' : 'Players'}</Text>
 
             <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={false} style={styles.playersListContainer}>
                 {props.players.map((player, index) => {
@@ -131,7 +136,7 @@ function playersSelection(props) {
             </ScrollView>
 
             <View style={styles.inputContainer}>
-                <TextInput value={inputValue} onChangeText={(text) => setInputValue(text)} onSubmitEditing={addPlayer} style={[styles.playerInput, { paddingLeft: .05 * windowWidth, paddingRight: .12 * windowWidth, paddingVertical: .025 * windowWidth, fontSize: .055 * windowWidth }]}  placeholder={props.currentLang === 'pl' ? 'Wpisz nazwę gracza' : 'Enter player name'} />  
+                <TextInput value={inputValue} onChangeText={(text) => setInputValue(text)} onSubmitEditing={addPlayer} style={styles.playerInput}  placeholder={props.currentLang === 'pl' ? 'Wpisz nazwę gracza' : 'Enter player name'} />  
             
                 <Pressable onPress={addPlayer} style={styles.addPlayerIconContainer}>
                     <Image style={styles.addPlayerIcon} source={require('../../assets/icons/add-player.png')} />
@@ -140,7 +145,7 @@ function playersSelection(props) {
             
             {inputErr && <Text style={styles.inputError}>{props.currentLang === 'pl' ? 'Nazwa gracza nie może być pusta, nie może się powtarzać i musi być krótsza niż 20 znaków' : "The player's name cannot be empty, cannot be repeated, and must be shorter than 20 characters"}</Text>}
 
-            <Link asChild href={props.game==="sevenSeconds" ? (props.players.length > 0 ? '/sevenSeconds' : '/sevenSecondsGameAddPlayers') : (props.players.length > 0 ? '/truthOrDare' : '/truthOrDareAddPlayers') } style={[styles.buttonContainer, { marginTop: inputErr ? .05 * windowWidth : .08 * windowWidth, backgroundColor: props.game==="sevenSeconds" ? '#0536E4' : '#F0000E' }]}>
+            <Link asChild href={props.game==="sevenSeconds" ? (props.players.length > 0 ? '/sevenSeconds' : '/sevenSecondsAddPlayers') : (props.players.length > 0 ? '/truthOrDare' : '/truthOrDareAddPlayers') } style={[styles.buttonContainer, { marginTop: inputErr ? .05 * windowWidth : .08 * windowWidth, backgroundColor: props.game==="sevenSeconds" ? '#0536E4' : '#F0000E' }]}>
                 <TouchableOpacity>
                     <Text style={styles.buttonText}>{props.currentLang === 'pl' ? 'Rozpocznij grę' : 'Start game'}</Text>
                 </TouchableOpacity>

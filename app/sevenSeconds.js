@@ -13,7 +13,7 @@ import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import fun
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+const adUnitId = TestIds.INTERSTITIAL;
 
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
@@ -22,65 +22,6 @@ const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
 function sevenSeconds() {
     // Set variable with window width using useWindowDimensions hook
     const { width: windowWidth} = useWindowDimensions();
-
-    const styles = StyleSheet.create({
-      mainContainer: {
-        backgroundColor: '#131313',
-        alignItems: 'center',
-      },
-      timerContainer: {
-          borderWidth: .006 * windowWidth,
-          borderColor: '#FFF',
-          borderRadius: .048 * windowWidth,
-          position: 'relative',
-          overflow: 'hidden',
-          width: 0.78 * windowWidth, 
-          marginTop: .06 * windowWidth,
-      },
-      timerFill: {
-          backgroundColor: '#0A3C88',
-          borderRadius: .048 * windowWidth,
-          paddingVertical: .023 * windowWidth,
-      },
-      timerValue: {
-          fontFamily: 'LuckiestGuy',
-          color: '#FFF',
-          fontSize: .065 * windowWidth, 
-          marginTop: .035 * windowWidth
-      },
-      buttonContainer: {
-        backgroundColor: '#0536E4',
-        width: '80%',
-        paddingVertical: .012 * windowWidth,
-        borderRadius: .035 * windowWidth,
-        textAlign: 'center',
-        position: 'relative',
-      },
-      buttonText: {
-        textAlign: 'center',
-        fontFamily: 'LuckiestGuy',
-        color: '#fff',
-        fontSize: .065 * windowWidth
-      },
-      questionContainer: {
-        backgroundColor: '#0A3C88', 
-        borderRadius: .09 * windowWidth,
-        borderColor: '#FFF',
-        width: .78 * windowWidth, 
-        marginTop: .1 * windowWidth, 
-        borderWidth: .009 * windowWidth,
-        minHeight: 1.05 * windowWidth,
-        paddingTop: .1 * windowWidth, 
-        paddingHorizontal: .05 * windowWidth
-      },
-      questionText: {
-        textAlign: 'center', 
-        fontFamily: 'LuckiestGuy', 
-        color: '#FFF',
-        fontSize: 0.08 * windowWidth, 
-        paddingVertical: 0.07 * windowWidth, 
-      },
-  });
 
     // Set current language (default is english)
     const [currentLang, setCurrentLang] = useState("en");
@@ -127,10 +68,72 @@ function sevenSeconds() {
     const [currentRound, setCurrentRound] = useState(1);
     // State for tracking when player should be removed from array
     const [safePlayersStatus, setSafePlayersStatus] = useState(false);
+    const [isTablet, setIsTablet] = useState(false);
+    // Array with recently used questions
+    const [unavailableQuestions, setUnavailableQuestions] = useState([]);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
         LuckiestGuy: require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+    });
+
+      const styles = StyleSheet.create({
+        mainContainer: {
+          backgroundColor: '#131313',
+          alignItems: 'center',
+        },
+        timerContainer: {
+            borderWidth: .006 * windowWidth,
+            borderColor: '#FFF',
+            borderRadius: .048 * windowWidth,
+            position: 'relative',
+            overflow: 'hidden',
+            width: 0.78 * windowWidth, 
+            marginTop: isTablet ? 0.05 * windowWidth : .06 * windowWidth,
+        },
+        timerFill: {
+            backgroundColor: '#0A3C88',
+            borderRadius: .048 * windowWidth,
+            paddingVertical: isTablet ? 0.017 * windowWidth :  .023 * windowWidth,
+        },
+        timerValue: {
+            fontFamily: 'LuckiestGuy',
+            color: '#FFF',
+            fontSize: isTablet ? 0.05 * windowWidth : .065 * windowWidth, 
+            marginTop: isTablet ? 0.025 * windowWidth : .035 * windowWidth
+        },
+        buttonContainer: {
+          backgroundColor: '#0536E4',
+          width: isTablet ? '65%' : '80%',
+          paddingVertical: .012 * windowWidth,
+          borderRadius: .035 * windowWidth,
+          textAlign: 'center',
+          position: 'relative',
+        },
+        buttonText: {
+          textAlign: 'center',
+          fontFamily: 'LuckiestGuy',
+          color: '#fff',
+          fontSize: isTablet ? .04 * windowWidth : .065 * windowWidth
+        },
+        questionContainer: {
+          backgroundColor: '#0A3C88', 
+          borderRadius: .09 * windowWidth,
+          borderColor: '#FFF',
+          width: isTablet ? .65 * windowWidth : .78 * windowWidth, 
+          marginTop: isTablet ? .06 * windowWidth : .1 * windowWidth, 
+          borderWidth: .009 * windowWidth,
+          minHeight: isTablet ? .60 * windowWidth : 1.05 * windowWidth,
+          paddingTop: isTablet ? .05 * windowWidth : .1 * windowWidth, 
+          paddingHorizontal: .05 * windowWidth
+        },
+        questionText: {
+          textAlign: 'center', 
+          fontFamily: 'LuckiestGuy', 
+          color: '#FFF',
+          fontSize: isTablet ? .05 * windowWidth : .08 * windowWidth,
+          paddingVertical: isTablet ? .04 * windowWidth : 0.07 * windowWidth, 
+        },
     });
 
     const netInfo = useNetInfo();
@@ -160,6 +163,8 @@ function sevenSeconds() {
           componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
     
+        setIsTablet(windowWidth>=600)
+
         fetchData();
     
         return () => {
@@ -221,7 +226,7 @@ function sevenSeconds() {
         }
         
         if(safePlayersStatus) {
-          if(!players.length === 2) {
+          if(players.length !== 2) {
             safePlayers.shift()
           }
         }
@@ -230,8 +235,6 @@ function sevenSeconds() {
         do {
           let playersArrayLength = players.length;
           randomPlayer = Math.floor(Math.random() * playersArrayLength);
-
-          
         } while(safePlayers.includes(players[randomPlayer]))
 
         
@@ -280,12 +283,12 @@ function sevenSeconds() {
 
         async function fetchTasks() {
           if (!firstTask) {
-              getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus).then(() => {
+              getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus, unavailableQuestions, setUnavailableQuestions).then(() => {
                 firstTaskTimeout = setTimeout(() => setTasksLoaded(true), 50)
               });
             }
           if (!secondTask) {
-            getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus).then(() => {
+            getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus, unavailableQuestions, setUnavailableQuestions).then(() => {
               secondTaskTimeout = setTimeout(() => setTasksLoaded(true), 50)
             });
           }
@@ -392,13 +395,13 @@ function sevenSeconds() {
 
           // If the next question status is true, then get and draw the next question
           if (secondTaskStatus) {
-            getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus).then(() => {
+            getSecondTask(setSecondTask, currentLang, setDatabaseErrorStatus, unavailableQuestions, setUnavailableQuestions).then(() => {
                 setLoadingSecondTask(false);
                 randSecondPlayer();
             });
           // If the next question status is false, then get and draw the next question
           } else {
-            getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus).then(() => {
+            getFirstTask(setFirstTask, currentLang, setDatabaseErrorStatus, unavailableQuestions, setUnavailableQuestions).then(() => {
                 setLoadingSecondTask(false);
                 randPlayer();
             });
@@ -472,15 +475,15 @@ function sevenSeconds() {
       return <DatabaseErrorScreen />;
     }
 
-    // Display internet error screen if there is no internet connection
+    // Display internet connection error screen if there is no internet connection
     if (!netInfo) {
       return <ConnectionErrorScreen />;
     }
 
     return (
-        <View>
+        <View style={{backgroundColor: '#131313'}}>
             <StatusBar backgroundColor='#000' style="light" />
-            <Nav currentLang={currentLang} main={false} contact={false} />
+            <Nav isTablet={isTablet} currentLang={currentLang} main={false} contact={false} />
 
             <ScrollView contentContainerStyle={styles.mainContainer}>
                 <View style={[styles.timerContainer, { backgroundColor: timerValue === 0 ? "red" : 'transparent' }]}>
@@ -500,17 +503,17 @@ function sevenSeconds() {
                         <Text style={[styles.questionText, { marginRight: 0.025 * windowWidth, color: '#00E5FA' }]}>{secondDrawnPlayer}</Text><Text> </Text>
                           {secondTask}</Text>
                     </Animated.View>
-                    <View style={{ width: 0.78 * windowWidth, position: 'relative', top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#002256', borderRadius: .07 * windowWidth, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: .012 * windowWidth }}>
+                    <View style={{ width: isTablet ? .65 * windowWidth : .78 * windowWidth, position: 'relative', top: isTablet ? -0.17 * windowWidth : -0.15 * windowWidth, zIndex: -2, backgroundColor: '#002256', borderRadius: .07 * windowWidth, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: isTablet ? .006 * windowWidth : .01 * windowWidth }}>
                     </View>
-                    <View style={{ width: 0.78 * windowWidth, position: 'relative', top: -0.3 * windowWidth, zIndex: -3, backgroundColor: '#00112B', borderRadius: .07 * windowWidth, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: .012 * windowWidth }}>
+                    <View style={{ width: isTablet ? .65 * windowWidth : .78 * windowWidth, position: 'relative', top: isTablet ? -0.34 * windowWidth : -0.3 * windowWidth, zIndex: -3, backgroundColor: '#00112B', borderRadius: .07 * windowWidth, borderColor: '#FFF', paddingBottom: 0.2 * windowWidth, borderWidth: isTablet ? .005 * windowWidth : .008 * windowWidth }}>
                     </View>
                 </View>
 
-                <TouchableOpacity onPress={handleTimer} style={[styles.buttonContainer, { top: -0.24 * windowWidth }]}>
+                <TouchableOpacity onPress={handleTimer} style={[styles.buttonContainer, { top: isTablet ? -0.27 * windowWidth : -0.24 * windowWidth }]}>
                     <Text style={styles.buttonText}>{startedTimer ? (currentLang === "pl" ? "Zatrzymaj odliczanie" : "Stop countdown") : (currentLang === "pl" ? "Rozpocznij odliczanie" : "Start countdown")}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity disabled={loadingSecondTask} onPress={getTasks} style={[styles.buttonContainer, { marginBottom: 0.1 * windowWidth, top: -0.19 * windowWidth }]}>
+                <TouchableOpacity disabled={loadingSecondTask} onPress={getTasks} style={[styles.buttonContainer, { marginBottom: 0.1 * windowWidth, top: isTablet ? -0.23 * windowWidth : -0.19 * windowWidth }]}>
                     <Text style={styles.buttonText}>{currentLang === "pl" ? "Nastepne zadanie" : "Next task"}</Text>
                 </TouchableOpacity>
             </ScrollView>

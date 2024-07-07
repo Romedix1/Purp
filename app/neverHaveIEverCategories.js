@@ -15,6 +15,23 @@ function neverHaveIEverCategories() {
   // Set variable with window width
   const { width: windowWidth } = useWindowDimensions();
 
+  // Set current language (default is english)
+  const [currentLang, setCurrentLang] = useState("en");
+  // Array of selected categories
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  // State for empty categories error handling
+  const [emptyCategoriesErr, setEmptyCategoriesErr] = useState(false);
+  // State for empty categories error handling on load
+  const [emptyCategoriesErrOnLoad, setEmptyCategoriesErrOnLoad] = useState(false);
+  // State for tracking loading component
+  const [componentLoaded, setComponentLoaded] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  // Load fonts 
+  const [fontsLoaded] = useFonts({
+    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+  });
+  
   const styles = StyleSheet.create({
     categoriesContainer: {
       width: '100%',
@@ -27,56 +44,40 @@ function neverHaveIEverCategories() {
       textAlign: 'center',
       color: "#fff",
       fontFamily: 'LuckiestGuy',
-      fontSize: .1 * windowWidth, 
-      marginTop: .08 * windowWidth, 
-      marginBottom: .06 * windowWidth 
+      fontSize: isTablet ? .065 * windowWidth : .1 * windowWidth, 
+      marginTop: isTablet ? .045 * windowWidth : .08 * windowWidth, 
+      marginBottom: isTablet ? .05 * windowWidth : .06 * windowWidth 
     },
     categoriesCardsContainer: {
       width: '95%',
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      gap: .03 * windowWidth
+      gap: isTablet ? .02 * windowWidth : .03 * windowWidth
     },
     categoriesErrorText: {
       width: '90%',
       textAlign: 'center',
       color: "#E40000",
       fontFamily: "LuckiestGuy",
-      marginTop: .1 * windowWidth,  
-      fontSize: .045 * windowWidth
+      marginTop: isTablet ? .07 * windowWidth : .1 * windowWidth,  
+      fontSize: isTablet ? .04 * windowWidth : .045 * windowWidth
     },
     CategoriesButtonContainer: {
       backgroundColor: '#6C1EC5',
       width: '96%',
-      paddingVertical: .02 * windowWidth,
+      paddingVertical: isTablet ? .015 * windowWidth : .02 * windowWidth,
       borderRadius: .035 * windowWidth,
       textAlign: 'center',
     },
     CategoriesButtonText: {
       textAlign: 'center',
-      fontSize: .07 * windowWidth,
+      fontSize: isTablet ? .05 * windowWidth : .07 * windowWidth,
       fontFamily: 'LuckiestGuy',
       color: '#fff',
     },
   })
 
-  // Set current language (default is english)
-  const [currentLang, setCurrentLang] = useState("en");
-  // Array of selected categories
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  // State for empty categories error handling
-  const [emptyCategoriesErr, setEmptyCategoriesErr] = useState(false);
-  // State for empty categories error handling on load
-  const [emptyCategoriesErrOnLoad, setEmptyCategoriesErrOnLoad] = useState(false);
-  // State for tracking loading component
-  const [componentLoaded, setComponentLoaded] = useState(false);
-
-  // Load fonts 
-  const [fontsLoaded] = useFonts({
-    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
-  });
-  
   const netInfo = useNetInfo();
 
   // Checking length of categories if it's equel to 0 then error is displayed (checking every categories update)
@@ -97,6 +98,8 @@ function neverHaveIEverCategories() {
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
+
+      setIsTablet(windowWidth>=600)
 
       componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
@@ -126,20 +129,20 @@ function neverHaveIEverCategories() {
     return <LoadingScreen/>;
   }
 
-  // Display internet error screen if there is no internet connection
+  // Display internet connection error screen if there is no internet connection
   if (!netInfo) {
     return <ConnectionErrorScreen/>;
   }
 
   return (
-    <View>
+    <View style={{backgroundColor: '#131313'}}>
         <StatusBar backgroundColor='#000' style="light" />
-        <Nav currentLang={currentLang} main={false} />
+        <Nav isTablet={isTablet} currentLang={currentLang} main={false} />
         <View style={styles.categoriesContainer}>
             <Text style={styles.categoriesHeader}>{currentLang === 'pl' ? 'Wybierz kategorie do gry' : 'Select a categories for the game'}</Text>
 
             <ScrollView contentContainerStyle={styles.categoriesCardsContainer}>
-              <CategoriesCard setEmptyCategoriesErr={setEmptyCategoriesErr} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} />
+              <CategoriesCard isTablet={isTablet} setEmptyCategoriesErr={setEmptyCategoriesErr} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} />
 
 
               {(emptyCategoriesErr && emptyCategoriesErrOnLoad) && <Text style={styles.categoriesErrorText}>{currentLang === 'pl' ? 'Należy wybrać przynajmniej 1 kategorie' : 'You must choose at least 1 category'}</Text>}

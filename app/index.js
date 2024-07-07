@@ -4,7 +4,7 @@ import Nav from './components/nav'; // Import Nav component
 import { useFonts } from "expo-font";
 import Cards from './components/mainCards'; // Import game cards component
 import { readLanguage, saveLanguage } from './scripts/language'; // Import language functions
-import { readTerms } from './scripts/terms'; // Import language functions
+import { readTerms, saveTerms } from './scripts/terms'; // Import language functions
 import CardsData from './components/mainCardsData.json'; // Import game cards data component
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import TermsScreen from './termsScreen'; // Import terms screen component
@@ -33,6 +33,7 @@ const index = () => {
   const [componentLoaded, setComponentLoaded] = useState(false);
   // State for tracking the acceptance status of the terms and conditions
   const [terms, setTerms] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   
   // Styles
   const styles = StyleSheet.create({
@@ -40,17 +41,17 @@ const index = () => {
       backgroundColor: '#131313',
       width: '100%',
       alignItems: 'center',
-      minHeight: 2.6 * windowWidth,
+      minHeight: isTablet ? 1.8 * windowWidth :  2.6 * windowWidth,
     },
     logoImage: {
       resizeMode: 'contain',
-      height: 0.32 * windowWidth, 
-      marginTop: .055 * windowWidth
+      height: isTablet ? 0.15 * windowWidth :  0.32 * windowWidth, 
+      marginTop: isTablet ? .045 * windowWidth : 0.055 * windowWidth
     },
     appName: {
       fontFamily: 'LuckiestGuy',
       color: '#fff',
-      fontSize: .15 * windowWidth, 
+      fontSize: isTablet ? 0.1 * windowWidth :  0.15 * windowWidth, 
       marginBottom: .02 * windowWidth,
       marginTop: .015 * windowWidth
     },
@@ -76,20 +77,21 @@ const index = () => {
   })
 
   const netInfo = useNetInfo();
-  let componentTimeout;
   
   // Fetching saved language
   useEffect(() => {
+    let componentTimeout;
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
 
-      const terms = await readTerms();
-      setTerms(terms);
+      const readedTerms = await readTerms();
+      setTerms(readedTerms);
+
+      setIsTablet(windowWidth>=600)
 
       componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
-
     fetchData(); 
 
     return () => {
@@ -101,6 +103,13 @@ const index = () => {
   useEffect(() => {
     saveLanguage(currentLang);
   }, [currentLang]);
+
+  // Saving terms to local storage after change
+  useEffect(() => {
+    if(componentLoaded) {
+      saveTerms(terms);
+    }
+  }, [terms]);
 
   const amountOfGames = CardsData[0].en.length - 1;
 
@@ -152,31 +161,31 @@ const index = () => {
     return <LoadingScreen />;
   }
 
-  // Display internet error screen if there is no internet connection
+  // Display internet connection error screen if there is no internet connection
   if (!netInfo) {
     return <ConnectionErrorScreen />;
   }
   
   // Display terms screen if there aren't accepted
   if (!terms && componentLoaded) {
-    return <TermsScreen />;
+    return <TermsScreen isTablet={isTablet} setTerms={setTerms} currentLang={currentLang} setCurrentLang={setCurrentLang} />;
   }
 
   return (
-    <View>
+    <View style={{backgroundColor: '#131313'}}>
       <StatusBar backgroundColor='#000' style="light" />
-      <Nav setCurrentLang={setCurrentLang} currentLang={currentLang} main={true} />
+      <Nav isTablet={isTablet} setCurrentLang={setCurrentLang} currentLang={currentLang} main={true} />
 
       <View {...panResponder.panHandlers}>
         <ScrollView contentContainerStyle={styles.mainContainer}>
           <Image style={styles.logoImage} source={require('../assets/icons/logo.png')}/>
           <Text style={styles.appName}>Purp</Text>
           <View style={ styles.cardsContainer }>
-            <Pressable onPress={previousGame} style={[styles.arrowStylesContainer, { left: 0.005 * windowWidth, display: currentCard===0 ? 'none' : 'block' }]}><Image style={{ resizeMode: 'contain', width: .08 *windowWidth, left: 12, transform: [{ rotate: '180deg' }] }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
+            <Pressable onPress={previousGame} style={[styles.arrowStylesContainer, { left: isTablet ? 0.04 * windowWidth : 0.005 * windowWidth, display: currentCard===0 ? 'none' : 'block' }]}><Image style={{ resizeMode: 'contain', width: isTablet ? .06 * windowWidth : .08 *windowWidth, left: 12, transform: [{ rotate: '180deg' }] }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
             <View style={styles.cardContainer}>
-              <Cards resetFlipped={resetFlipped} setResetFlipped={setResetFlipped} flipped={flipped} setFlipped={setFlipped} currentCard={currentCard} currentLang={currentLang} setCurrentLang={setCurrentLang} previousGame={previousGame} nextGame={nextGame} />
+              <Cards isTablet={isTablet} resetFlipped={resetFlipped} setResetFlipped={setResetFlipped} flipped={flipped} setFlipped={setFlipped} currentCard={currentCard} currentLang={currentLang} setCurrentLang={setCurrentLang} previousGame={previousGame} nextGame={nextGame} />
             </View>
-            <Pressable onPress={nextGame} style={[styles.arrowStylesContainer, { right: 0.045 * windowWidth, display: currentCard===amountOfGames ? 'none' : 'block' }]}><Image style={{ width: .08 *windowWidth, resizeMode: 'contain' }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
+            <Pressable onPress={nextGame} style={[styles.arrowStylesContainer, { right: isTablet ? 0.06 * windowWidth : 0.045 * windowWidth, display: currentCard===amountOfGames ? 'none' : 'block' }]}><Image style={{ width: isTablet ? .06 * windowWidth : .08 *windowWidth, resizeMode: 'contain' }} source={require('../assets/icons/slideGameArrow.png')}/></Pressable>
           </View>
         </ScrollView>
       </View>

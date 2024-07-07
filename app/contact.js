@@ -10,7 +10,18 @@ import { StatusBar } from 'expo-status-bar';
 const contact = () => {
   // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
-  
+
+  // Set current lang default is english
+  const [currentLang, setCurrentLang] = useState("en");
+  // State for tracking loading component
+  const [componentLoaded, setComponentLoaded] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  // Load fonts 
+  const [fontsLoaded] = useFonts({
+    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+  });  
+
   const styles = StyleSheet.create({
     mainContainer: {
       backgroundColor: '#131313',
@@ -26,18 +37,18 @@ const contact = () => {
       width: .8 * windowWidth, 
       paddingHorizontal: .07 * windowWidth, 
       paddingVertical: .05 * windowWidth, 
-      marginTop: .07 * windowWidth
+      marginTop: isTablet ? .04 * windowWidth : .07 * windowWidth
     },
     boxHeader: {
       color: '#fff',
       fontFamily: 'LuckiestGuy',
-      fontSize: .1 * windowWidth, 
+      fontSize: isTablet ? .06 * windowWidth : .1 * windowWidth, 
       marginBottom: .025 * windowWidth
     },
     boxEmail: {
       color: '#fff',
       fontFamily: 'LuckiestGuy',
-      fontSize: .043 * windowWidth
+      fontSize: isTablet ? .038 * windowWidth : .043 * windowWidth
     },
     iconsContainer: {
       flexDirection: 'row',
@@ -45,20 +56,10 @@ const contact = () => {
     },
     socialMediaIcon: {
       resizeMode: 'contain',
-      width: .12 * windowWidth,
-      height: .12 * windowWidth,
+      width: isTablet ? .09 * windowWidth : .12 * windowWidth,
+      height: isTablet ? .09 * windowWidth : .12 * windowWidth,
     }
   });
-
-  // Set current lang default is english
-  const [currentLang, setCurrentLang] = useState("en");
-  // State for tracking loading component
-  const [componentLoaded, setComponentLoaded] = useState(false);
-
-  // Load fonts 
-  const [fontsLoaded] = useFonts({
-    'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
-  });  
 
   const netInfo = useNetInfo();
   // Fetching saved language
@@ -68,6 +69,8 @@ const contact = () => {
     const fetchData = async () => {
       const lang = await readLanguage();
       setCurrentLang(lang);
+
+      setIsTablet(windowWidth>=600)
 
       componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
@@ -84,7 +87,7 @@ const contact = () => {
     return <LoadingScreen/>;
   }
 
-  // Display internet error screen if there is no internet connection
+  // Display internet connection error screen if there is no internet connection
   if (!netInfo) {
     return <ConnectionErrorScreen/>;
   }
@@ -105,13 +108,13 @@ const contact = () => {
   };
 
   return (
-    <View>
+    <View style={{backgroundColor: '#131313'}}>
       <StatusBar backgroundColor='#000' style="light" />
-      <Nav contact={true} currentLang={currentLang}/>
+      <Nav isTablet={isTablet} contact={true} currentLang={currentLang}/>
       <ScrollView contentContainerStyle={styles.mainContainer}>
-        <View style={[styles.boxContainer, { marginTop: .13 * windowWidth }]}>
+        <View style={[styles.boxContainer, { marginTop: isTablet ? .08 * windowWidth : .13 * windowWidth }]}>
           <Text style={styles.boxHeader}>{currentLang === 'pl' ? 'Kontakt' : 'Contact'}</Text>
-          <Text style={[styles.boxEmail, {  }]}>contact.purp.app@gmail.com</Text>
+          <Text style={styles.boxEmail}>contact.purp.app@gmail.com</Text>
         </View>
 
         <View style={styles.boxContainer}>

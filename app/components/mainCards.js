@@ -6,13 +6,13 @@ import { Link } from 'expo-router';
 function MainCards(props) {
   // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
-
+  
   // Styles
   const styles = StyleSheet.create({
     cardsContainer: {
       flexDirection: 'row',
-      width: .685 * windowWidth,
-      marginRight: .26 * windowWidth, 
+      width: props.isTablet ? .530 * windowWidth : .685 * windowWidth,
+      marginRight: props.isTablet ? .36 * windowWidth : .26 * windowWidth, 
     },
     cardContainer: {
       width: '100%',
@@ -24,7 +24,7 @@ function MainCards(props) {
       backfaceVisibility: 'hidden',
       borderWidth: .004 * windowWidth, 
       borderRadius: .08 * windowWidth, 
-      paddingTop: .09 * windowWidth, 
+      paddingTop: props.isTablet ? .06 * windowWidth : .09 * windowWidth, 
     },
     cardBack: {
       width: '100%',
@@ -32,18 +32,18 @@ function MainCards(props) {
       position: 'absolute',
       top: 0,
       backfaceVisibility: 'hidden',
-      paddingTop: .05 * windowWidth, 
+      paddingTop: props.isTablet ? .03 * windowWidth : .05 * windowWidth, 
       borderRadius: .08 * windowWidth, 
       borderWidth: .004 * windowWidth, 
     },
     rulesHeader: {
       fontFamily: 'LuckiestGuy',
-      fontSize: .1 * windowWidth
+      fontSize: props.isTablet ? .065 * windowWidth :  .1 * windowWidth
     },
     cardText: {
       fontFamily: 'LuckiestGuy',
-      fontSize: .105 * windowWidth, 
-      lineHeight: .11 * windowWidth,
+      fontSize: props.isTablet ? .065 * windowWidth : .105 * windowWidth,
+      lineHeight: props.isTablet ? .065 * windowWidth : .11 * windowWidth,
     },
     cardGameRulesText: {
       width: '90%',
@@ -51,28 +51,28 @@ function MainCards(props) {
       color: '#fff',
       textAlign: 'center',
       marginTop: .04 * windowWidth,
-      marginBottom: .1 * windowWidth, 
-      fontSize: .05 * windowWidth, 
-      lineHeight: .075* windowWidth
+      marginBottom: props.isTablet ? .045 * windowWidth :  .1 * windowWidth, 
+      fontSize: props.isTablet ? .035 * windowWidth : .05 * windowWidth, 
+      lineHeight: props.isTablet ? .05 * windowWidth :  .075* windowWidth
     },
     cardIconContainer: {
       backgroundColor: '#0F0F0F',
-      paddingHorizontal: .065 * windowWidth,
-      paddingVertical: .06 * windowWidth,
+      paddingHorizontal: props.isTablet ? .045 * windowWidth :  .065 * windowWidth,
+      paddingVertical: props.isTablet ? .045 * windowWidth : .06 * windowWidth,
       borderColor: '#262323',
       borderWidth: .01 * windowWidth,
       borderRadius: 1 * windowWidth,
-      marginTop: .06 * windowWidth,
-      marginBottom: .075 * windowWidth,
+      marginTop: props.isTablet ? .03 * windowWidth : .06 * windowWidth,
+      marginBottom: props.isTablet ? .045 * windowWidth : .075 * windowWidth,
     },
     cardIcon: {
       resizeMode: 'contain',
-      width: .2 * windowWidth,
-      height: .2 * windowWidth
+      width: props.isTablet ? .13 * windowWidth : .2 * windowWidth,
+      height: props.isTablet ? .13 * windowWidth : .2 * windowWidth
     },
     cardButtonContainer: {
       width: '85%',
-      marginBottom: .06 * windowWidth,
+      marginBottom: props.isTablet ? .04 * windowWidth : .06 * windowWidth,
       paddingVertical: .015 * windowWidth,
       borderRadius: .035 * windowWidth,
       textAlign: 'center',
@@ -81,7 +81,7 @@ function MainCards(props) {
       textAlign: 'center',
       fontFamily: 'LuckiestGuy',
       color: '#fff',
-      fontSize: .062 * windowWidth
+      fontSize: props.isTablet ? .04 * windowWidth : .062 * windowWidth
     },
   });
 
@@ -115,17 +115,16 @@ function MainCards(props) {
   };
 
   useEffect(() => {
+    const clearCache = () => {
+      setIsAnimating(false);
+      translationX.setValue(0);
+      rotateValue.setValue(0);
+    };
 
-  const clearCache = () => {
-    setIsAnimating(false);
-    translationX.setValue(0);
-    rotateValue.setValue(0);
-  };
-
-  return () => {
-    clearCache();
-  };
-}, []);
+    return () => {
+      clearCache();
+    };
+  }, []);
   
   // Reset rotated card value 
   useEffect(() => {
@@ -157,7 +156,7 @@ function MainCards(props) {
   // Set current card position
   useEffect(() => {
     const slideAnimation = Animated.timing(translationX, {
-      toValue: -props.currentCard * 0.945 * windowWidth,
+      toValue: props.isTablet ? -props.currentCard * 0.89 * windowWidth : -props.currentCard * 0.945 * windowWidth,
       duration: 500,
       easing: Easing.linear,
       useNativeDriver: true,

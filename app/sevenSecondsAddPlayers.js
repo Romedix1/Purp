@@ -4,11 +4,13 @@ import PlayersSelection from './components/playersSelection'; // Import PlayersS
 import { readLanguage } from './scripts/language'; // Import language functions
 import LoadingScreen from './loadingScreen'; // Import loading screen component
 import { savePlayers, readPlayers } from './scripts/players'; // Import function savePlayers to saving players in local storage
-import { ScrollView } from 'react-native';
+import { ScrollView,  useWindowDimensions } from 'react-native';
 import useNetInfo from './scripts/checkConnection'
 import { StatusBar } from 'expo-status-bar';
 
-function sevenSecondsGameAddPlayers() {
+function sevenSecondsAddPlayers() {
+    const { width: windowWidth } = useWindowDimensions();
+
     // Set current language (default is english)
     const [currentLang, setCurrentLang] = useState("en");
     // State for tracking loading component
@@ -17,6 +19,7 @@ function sevenSecondsGameAddPlayers() {
     const [playersLoaded, setPlayersLoaded] = useState(false);
     // Array of introduced players
     const [players, setPlayers] = useState([]);
+    const [isTablet, setIsTablet] = useState(false);
 
     const netInfo = useNetInfo();
 
@@ -33,6 +36,8 @@ function sevenSecondsGameAddPlayers() {
             // Setting that categories are loaded
             setPlayersLoaded(true);
             
+            setIsTablet(windowWidth>=600)
+
             componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
     
@@ -57,20 +62,20 @@ function sevenSecondsGameAddPlayers() {
         return <LoadingScreen/>;
     }
 
-    // Display internet error screen if there is no internet connection
+    // Display internet connection error screen if there is no internet connection
     if (!netInfo) {
         return <ConnectionErrorScreen/>;
     }
 
     return (
-        <ScrollView>
+        <ScrollView contentContainerStyle={{backgroundColor: '#131313'}}>
             <StatusBar backgroundColor='#000' style="light" />
-            <Nav currentLang={currentLang} main={false} contact={false} />
+            <Nav isTablet={isTablet} currentLang={currentLang} main={false} contact={false} />
 
-            <PlayersSelection players={players} setPlayers={setPlayers} currentLang={currentLang} setPlayersLoaded={setPlayersLoaded} game={"sevenSeconds"} />
+            <PlayersSelection isTablet={isTablet} players={players} setPlayers={setPlayers} currentLang={currentLang} setPlayersLoaded={setPlayersLoaded} game={"sevenSeconds"} />
         </ScrollView>
     )
 
 }
 
-export default sevenSecondsGameAddPlayers
+export default sevenSecondsAddPlayers

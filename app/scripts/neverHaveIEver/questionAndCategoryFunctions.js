@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 
 // Function to draw a category randomly from the available options
@@ -21,58 +21,83 @@ import { db } from '../../../firebaseConfig';
         }
       }
 
-  // Function to draw first category randomly from the available options
-  export async function drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory) {
+  const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
+
+  // Fetching random question from database
+  export async function getQuestion(currentLang, setFirstQuestion, setDatabaseErrorStatus, setDrawnCategory, setTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions) {
     const randomNumber = Math.floor(Math.random() * selectedCategories.length);
     const randCategory = selectedCategories[randomNumber].selectedCategoryName;
 
     setDrawnCategory(randCategory)
-    setTranslatedCategory(translateCategory(randCategory));
-  }
+    setTranslatedCategory(translateCategory(randCategory))
 
-
-  // Function to draw second category randomly from the available options
-  export async function drawSecondCategory(selectedCategories, setSecondDrawnCategory, setSecondTranslatedCategory) {
-    const secondRandomNumber = Math.floor(Math.random() * selectedCategories.length);
-    const secondRandCategory = selectedCategories[secondRandomNumber].selectedCategoryName;
-  
-    setSecondDrawnCategory(secondRandCategory)
-    setSecondTranslatedCategory(translateCategory(secondRandCategory));
-  }
-
-  const neverHaveIEverRef = collection(db, 'NeverHaveIEver');
-
-  // Fetching random question from database
-  export async function getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus) {
     try {
-      const categoryRef = doc(neverHaveIEverRef, translatedCategory);
+      const categoryRef = doc(neverHaveIEverRef, translateCategory(randCategory));
       const questionsRef = collection(categoryRef, 'Questions');
       const questionsSnapshot = await getDocs(questionsRef);
-      const randomQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
+      
+      let isUnavailable;
+      let randomQuestionNumber;
+      do {
+        randomQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
+        isUnavailable = unavailableQuestions.some(
+          question => question.number === randomQuestionNumber && question.category === translateCategory(randCategory)
+        );
+      } while (isUnavailable);
+
+      if(unavailableQuestions.length >= 30) {
+        unavailableQuestions.shift();
+      }
+
       const questionDocRef = doc(categoryRef, 'Questions', `Question#${randomQuestionNumber}`);
       const questionDocSnapshot = await getDoc(questionDocRef);
       const questionText = questionDocSnapshot.data()[currentLang];
       setFirstQuestion(questionText);
+      setUnavailableQuestions([...unavailableQuestions, { number: randomQuestionNumber, category: translateCategory(randCategory)}]);
+      console.log(unavailableQuestions);
     } catch (error) {
+      console.log(error);
       setDatabaseErrorStatus(true);
-      setFirstQuestion('');
+      setFirstQuestion(error);
     }
   }
 
   // Fetching second random question from database
-  export async function getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion, setDatabaseErrorStatus) {
+  export async function getSecondQuestion(currentLang, setSecondQuestion, setDatabaseErrorStatus, setSecondDrawnCategory, setSecondTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions) {
+    const secondRandomNumber = Math.floor(Math.random() * selectedCategories.length);
+    const secondRandCategory = selectedCategories[secondRandomNumber].selectedCategoryName;
+  
+    setSecondDrawnCategory(secondRandCategory)
+    setSecondTranslatedCategory(translateCategory(secondRandCategory))
+    console.log(translateCategory(secondRandCategory))
     try {
-      const categoryRef = doc(neverHaveIEverRef, secondTranslatedCategory);
+      const categoryRef = doc(neverHaveIEverRef, translateCategory(secondRandCategory));
       const questionsRef = collection(categoryRef, 'Questions');
       const questionsSnapshot = await getDocs(questionsRef);
-      const randomSecondQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
+
+      let isUnavailable;
+      let randomSecondQuestionNumber;
+      do {
+        randomSecondQuestionNumber = Math.floor(Math.random() * questionsSnapshot.size) + 1;
+        isUnavailable = unavailableQuestions.some(
+          question => question.number === randomSecondQuestionNumber && question.category === translateCategory(secondRandCategory)
+        );
+      } while (isUnavailable);
+
+      if(unavailableQuestions.length >= 30) {
+        unavailableQuestions.shift();
+      }
+
       const secondQuestionDocRef = doc(categoryRef, 'Questions', `Question#${randomSecondQuestionNumber}`);
       const secondQuestionDocSnapshot = await getDoc(secondQuestionDocRef);
       const secondQuestionText = secondQuestionDocSnapshot.data()[currentLang];
       setSecondQuestion(secondQuestionText);
+      setUnavailableQuestions([...unavailableQuestions, { number: randomSecondQuestionNumber, category: translateCategory(secondRandCategory)}]);
+      console.log(unavailableQuestions);
     } catch (error) {
+      console.log(error);
       setDatabaseErrorStatus(true);
-      setSecondQuestion('');
+      setSecondQuestion(error);
     }
   }
   

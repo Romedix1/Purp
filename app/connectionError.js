@@ -7,7 +7,16 @@ import { StatusBar } from 'expo-status-bar';
 function connectionError() {
     // Set variable with window width and window height using useWindowDimensions hook
     const { width: windowWidth} = useWindowDimensions();
-    
+
+    // Set current language (default is english)
+    const [currentLang, setCurrentLang] = useState("en");
+    const [isTablet, setIsTablet] = useState(false);
+
+    // Load fonts 
+    const [fontsLoaded] = useFonts({
+        'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+    });
+
     const styles = StyleSheet.create({
         noInternetConnectionContainer: {
             flex: 1,
@@ -19,7 +28,7 @@ function connectionError() {
             textAlign: 'center',
             fontFamily: 'LuckiestGuy',
             color: "#fff",
-            fontSize: .085 * windowWidth, 
+            fontSize: isTablet ? 0.07 * windowWidth : .085 * windowWidth, 
             marginTop: .05 * windowWidth
         },
         noInternetConnectionText: {
@@ -27,25 +36,19 @@ function connectionError() {
             textAlign: 'center',
             fontFamily: 'LuckiestGuy',
             color: "#fff",
-            fontSize: .051 * windowWidth, 
+            fontSize: isTablet ? 0.04 * windowWidth : .051 * windowWidth, 
             marginTop: .04 * windowWidth,
-            lineHeight: .073 * windowWidth
+            lineHeight: isTablet ? 0.057 * windowWidth : .073 * windowWidth
         }
     })
-
-    // Set current language (default is english)
-    const [currentLang, setCurrentLang] = useState("en");
-
-    // Load fonts 
-    const [fontsLoaded] = useFonts({
-        'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
-    });
 
     // Fetching saved language
     useEffect(() => {
         const fetchData = async () => {
             const lang = await readLanguage();
             setCurrentLang(lang);
+
+            setIsTablet(windowWidth>=600)
         };
 
         fetchData();

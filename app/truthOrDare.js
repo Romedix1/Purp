@@ -13,7 +13,7 @@ import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import fun
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+const adUnitId = TestIds.INTERSTITIAL;
 
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
@@ -22,94 +22,6 @@ const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
 function TruthOrDare() {
     // Set variable with window width using useWindowDimensions hook
     const { width: windowWidth} = useWindowDimensions();
-
-    const styles = StyleSheet.create({
-        mainContainer: {
-            backgroundColor: '#131313',
-            alignItems: 'center',
-            minHeight: 2 * windowWidth
-        },
-        cardsContainer: {
-            flexDirection: 'row',
-        },
-        cardContainer: {
-            borderRadius: .075 * windowWidth,
-            width: '100%',
-            borderColor: '#fff',
-            borderWidth: .006 * windowWidth,
-            height: 0.9 * windowWidth,
-            borderRadius: .09 * windowWidth,
-        },
-        currentPlayerContainer: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            marginTop: 0.075 * windowWidth,
-            width: '100%',
-            justifyContent: 'center'
-        },
-        currentPlayer: {
-            fontFamily: 'LuckiestGuy',
-            color: '#FFF',
-            fontSize: 0.075 * windowWidth
-        },
-        card: {
-            position: 'relative',
-            width: 'auto',
-            width: .45 * windowWidth
-        },
-        truthCard: {
-            backgroundColor: '#4A8A22',
-        },
-        dareCard: {
-            backgroundColor: '#810C0C',
-        },
-        truthHeader: {
-            fontFamily: 'LuckiestGuy',
-            color: '#FFF',
-            textAlign: 'center',
-            fontSize: 0.075 * windowWidth, 
-            marginTop: 0.08 * windowWidth
-        },
-        cardsContainer: {
-            flexDirection: 'row',
-        },
-        cardFront: {
-            width: '100%',
-            alignItems: 'center',
-            backfaceVisibility: 'hidden',
-        },
-        cardBack: {
-            width: '100%',
-            alignItems: 'center',
-            position: 'absolute',
-            backfaceVisibility: 'hidden',
-            height: 0.9 * windowWidth, 
-            paddingTop: .04 * windowWidth,
-            paddingHorizontal: .035 * windowWidth,
-            paddingTop: .15 * windowWidth, 
-        }, 
-        buttonContainer: {
-            backgroundColor: '#6C1EC5',
-            width: '80%',
-            paddingVertical: .02 * windowWidth,
-            borderRadius: .048 * windowWidth,
-            textAlign: 'center',
-            position: 'relative',
-            top: -(.175 * windowWidth),
-        },
-        buttonText: {
-          textAlign: 'center',
-          fontSize: .072 * windowWidth,
-          fontFamily: 'LuckiestGuy',
-          color: '#fff',
-        },
-        cardBackText: {
-            fontFamily: 'LuckiestGuy',
-            color: '#FFF',
-            textAlign: 'center',
-            fontSize: .045 * windowWidth
-        }
-    });
 
     // Set current language (default is english)
     const [currentLang, setCurrentLang] = useState('en');
@@ -148,10 +60,99 @@ function TruthOrDare() {
     const [currentRound, setCurrentRound] = useState(1);
     // State for tracking when player should be removed from array
     const [safePlayersStatus, setSafePlayersStatus] = useState(false);
+    const [isTablet, setIsTablet] = useState(false);
+    // Array with recently used questions
+    const [unavailableQuestions, setUnavailableQuestions] = useState([]);
 
     // Load fonts 
     const [fontsLoaded] = useFonts({
         'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
+    });
+
+    const styles = StyleSheet.create({
+        mainContainer: {
+            backgroundColor: '#131313',
+            alignItems: 'center',
+            minHeight: 2 * windowWidth
+        },
+        cardsContainer: {
+            flexDirection: 'row',
+        },
+        cardContainer: {
+            borderRadius: .075 * windowWidth,
+            width: '100%',
+            borderColor: '#fff',
+            borderWidth: .006 * windowWidth,
+            height: isTablet ? 0.7 * windowWidth : 0.9 * windowWidth,
+            borderRadius: .09 * windowWidth,
+        },
+        currentPlayerContainer: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            marginTop:  isTablet ? 0.045 * windowWidth : 0.075 * windowWidth,
+            width: '100%',
+            justifyContent: 'center'
+        },
+        currentPlayer: {
+            fontFamily: 'LuckiestGuy',
+            color: '#FFF',
+            fontSize: isTablet ? 0.055 * windowWidth : 0.075 * windowWidth
+        },
+        card: {
+            position: 'relative',
+            width: isTablet ? 0.35 * windowWidth : .45 * windowWidth
+        },
+        truthCard: {
+            backgroundColor: '#4A8A22',
+        },
+        dareCard: {
+            backgroundColor: '#810C0C',
+        },
+        cardHeader: {
+            fontFamily: 'LuckiestGuy',
+            color: '#FFF',
+            textAlign: 'center',
+            fontSize: isTablet ? 0.05 * windowWidth : 0.075 * windowWidth, 
+            marginTop: 0.08 * windowWidth
+        },
+        cardsContainer: {
+            flexDirection: 'row',
+        },
+        cardFront: {
+            width: '100%',
+            alignItems: 'center',
+            backfaceVisibility: 'hidden',
+        },
+        cardBack: {
+            width: '100%',
+            alignItems: 'center',
+            position: 'absolute',
+            backfaceVisibility: 'hidden',
+            height: isTablet ? 0.7 * windowWidth : 0.9 * windowWidth, 
+            paddingHorizontal: .035 * windowWidth,
+            paddingTop: isTablet ? 0.1 * windowWidth : .15 * windowWidth, 
+        }, 
+        buttonContainer: {
+            backgroundColor: '#6C1EC5',
+            width: isTablet ? '65%' : '80%',
+            paddingVertical: .02 * windowWidth,
+            borderRadius: .048 * windowWidth,
+            textAlign: 'center',
+            position: 'relative',
+            top: -(.175 * windowWidth),
+        },
+        buttonText: {
+          textAlign: 'center',
+          fontSize: isTablet ? .045 * windowWidth : .072 * windowWidth,
+          fontFamily: 'LuckiestGuy',
+          color: '#fff',
+        },
+        cardBackText: {
+            fontFamily: 'LuckiestGuy',
+            color: '#FFF',
+            textAlign: 'center',
+            fontSize: isTablet ? 0.03 * windowWidth : .045 * windowWidth
+        }
     });
 
     const netInfo = useNetInfo();
@@ -212,6 +213,8 @@ function TruthOrDare() {
             // Setting that categories are loaded
             setPlayersLoaded(true);
 
+            setIsTablet(windowWidth>=600)
+
             componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
     
@@ -242,12 +245,12 @@ function TruthOrDare() {
 
     // Function to randomly select a player from the list
     function randPlayer() {
-        if(currentRound == numberOfRounds) {
+        if(currentRound === numberOfRounds) {
             setSafePlayersStatus(true)
           }
     
           if(safePlayersStatus) {
-            if(!players.length === 2) {
+            if(players.length !== 2) {
               safePlayers.shift()
             }
           }
@@ -265,8 +268,8 @@ function TruthOrDare() {
           } else if(players.length !== 1) {
             setSafePlayers([...safePlayers, players[randomPlayer]]);
           }
-    
-          setDrawnPlayer(players[randomPlayer]);
+        
+        setDrawnPlayer(players[randomPlayer]);
     }
 
     // Function to discard the "Truth" card
@@ -283,7 +286,7 @@ function TruthOrDare() {
             Animated.timing(
                 dareTransformX,
                 {
-                    toValue: -(0.225 * windowWidth),
+                    toValue: isTablet ? -(0.175 * windowWidth) : -(0.225 * windowWidth),
                     duration: 700,
                     useNativeDriver: true
                 }
@@ -299,7 +302,7 @@ function TruthOrDare() {
             Animated.timing(
                 dareScaleX,
                 {
-                    toValue: 1.7,
+                    toValue: isTablet ? 1.6 : 1.7,
                     duration: 400,
                     useNativeDriver: true
                 }
@@ -307,7 +310,7 @@ function TruthOrDare() {
             Animated.timing(
                 dareScaleY,
                 {
-                    toValue: 1.5,
+                    toValue: isTablet ? 1.4 : 1.5,
                     duration: 400,
                     useNativeDriver: true
                 }
@@ -331,7 +334,7 @@ function TruthOrDare() {
             Animated.timing(
                 truthTransformX,
                 {
-                    toValue: 0.225 * windowWidth,
+                    toValue: isTablet ? 0.175 * windowWidth : 0.225 * windowWidth,
                     duration: 700,
                     useNativeDriver: true
                 }
@@ -347,7 +350,7 @@ function TruthOrDare() {
             Animated.timing(
                 truthScaleX,
                 {
-                    toValue: 1.7,
+                    toValue: isTablet ? 1.6 : 1.7,
                     duration: 400,
                     useNativeDriver: true
                 }
@@ -355,7 +358,7 @@ function TruthOrDare() {
             Animated.timing(
                 truthScaleY,
                 {
-                    toValue: 1.5,
+                    toValue: isTablet ? 1.4 : 1.5,
                     duration: 400,
                     useNativeDriver: true
                 }
@@ -481,12 +484,12 @@ function TruthOrDare() {
 
     const rotateTruthCard = truthRotate.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', '-13deg'],
+        outputRange: isTablet ? ['0deg', '-15deg'] : ['0deg', '-13deg'],
     });
 
     const rotateDareCard = dareRotate.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', '13deg'],
+        outputRange: isTablet ? ['0deg', '15deg'] : ['0deg', '13deg'],
     });
 
     // Rotate card to front values
@@ -519,7 +522,7 @@ function TruthOrDare() {
 
     // Effect to load task from database when the selected card changes
     useEffect(() => {
-        loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask, setDatabaseErrorStatus);
+        loadTaskFromDatabase(selectedCard, currentLang, setFetchedTask, setLoadedTask, setDatabaseErrorStatus, unavailableQuestions, setUnavailableQuestions);
     }, [selectedCard])
 
    // Clear cache
@@ -558,8 +561,8 @@ function TruthOrDare() {
         setIsAdLoaded(true);
     }
 
-        if (adCounter % 10 === 0) {
-        interstitial.show();
+        if (adCounter % 20 === 0) {
+            interstitial.show();
         }
 
     }, [adCounter]);
@@ -588,15 +591,15 @@ function TruthOrDare() {
         return <DatabaseErrorScreen />;
     }
 
-    // Display internet error screen if there is no internet connection
+    // Display internet connection error screen if there is no internet connection
     if (!netInfo) {
         return <ConnectionErrorScreen/>;
     }
 
     return (
-        <View>
+        <View style={{backgroundColor: '#131313'}}>
             <StatusBar backgroundColor='#000' style="light" />
-            <Nav currentLang={currentLang} main={false}/>
+            <Nav isTablet={isTablet} currentLang={currentLang} main={false}/>
             <ScrollView contentContainerStyle={[styles.mainContainer]}>
                 <View style={[styles.currentPlayerContainer, { display: selectedCard !== '' ? 'none' : 'block'}]}>
                     {currentLang === 'pl' ? (
@@ -613,11 +616,11 @@ function TruthOrDare() {
 
                 </View>
                 
-                <View style={[styles.cardsContainer, {marginTop: 0.25 * windowWidth, paddingTop: selectedCard !== '' ? .08 * windowWidth : 0}]}>
+                <View style={[styles.cardsContainer, {marginTop:  isTablet ? 0.15 * windowWidth : 0.25 * windowWidth, paddingTop: selectedCard !== '' ? .08 * windowWidth : 0}]}>
                     <Pressable style={{zIndex: 1}} onPress={() => selectCard("Truth")}>
                         <Animated.View style={[styles.cardsContainer, styles.card,  { opacity: !truthCardVisibility ? 0 : 1, transform: [{ rotate: rotateTruthCard}, {translateX: truthTransformX}, { scaleX: truthScaleX }, { scaleY: truthScaleY } ]}]}>
                             <Animated.View style={[styles.cardContainer, styles.cardFront,  styles.truthCard , frontAnimatedStyle ]}>
-                                <Text style={styles.truthHeader}>{currentLang === 'pl' ? 'Prawda' : 'Truth'}</Text>
+                                <Text style={styles.cardHeader}>{currentLang === 'pl' ? 'Prawda' : 'Truth'}</Text>
                             </Animated.View>
                             <Animated.View style={[styles.cardContainer,styles.cardBack, backAnimatedStyle,  styles.truthCard ]}>
                                 <Text style={styles.cardBackText}>{fetchedTask}</Text>
@@ -628,8 +631,8 @@ function TruthOrDare() {
                     <Pressable onPress={() => selectCard("Dare")}>
                         <Animated.View style={[ styles.cardsContainer, styles.card,  { opacity: !dareCardVisibility ? 0 : 1,  transform: [{ rotate: rotateDareCard}, {translateX: dareTransformX}, { scaleX: dareScaleX }, { scaleY: dareScaleY } ]}]}>
                             
-                            <Animated.View style={[styles.cardContainer, styles.cardFront,  styles.dareCard , frontAnimatedStyle, {height: 0.9 * windowWidth}]}>
-                                <Text style={styles.truthHeader}>{currentLang === 'pl' ? 'Wyzwanie' : 'Dare'}</Text>
+                            <Animated.View style={[styles.cardContainer, styles.cardFront,  styles.dareCard , frontAnimatedStyle, {height: isTablet ? 0.7 * windowWidth : 0.9 * windowWidth}]}>
+                                <Text style={styles.cardHeader}>{currentLang === 'pl' ? 'Wyzwanie' : 'Dare'}</Text>
                             </Animated.View>
 
                             <Animated.View style={[styles.cardContainer, styles.cardBack, backAnimatedStyle, styles.dareCard ]}>
@@ -641,7 +644,7 @@ function TruthOrDare() {
                     
                 </View>
                 {loadedTask && 
-                    <TouchableOpacity disabled={isAnimating} onPress={() => returnCards()} style={[styles.buttonContainer, { marginTop: .55 * windowWidth, backgroundColor: selectedCard === 'Dare' ? '#F0000E' : '#6ACC2C' }]}>
+                    <TouchableOpacity disabled={isAnimating} onPress={() => returnCards()} style={[styles.buttonContainer, { marginTop: isTablet ? .4 * windowWidth : .55 * windowWidth, backgroundColor: selectedCard === 'Dare' ? '#F0000E' : '#6ACC2C' }]}>
                         <Text style={styles.buttonText}>{currentLang === 'pl' ? 'Wybierz następną kartę' : 'Select next card'}</Text>
                     </TouchableOpacity>
                 }

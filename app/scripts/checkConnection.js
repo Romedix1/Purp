@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 
-// Function to checking internet connection
+// Custom hook to check internet connection
 const useNetInfo = () => {
-  const [netInfo, setNetInfo] = useState(null);
+  const [isConnected, setIsConnected] = useState(null);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      setNetInfo(state);
+      setIsConnected(state.isConnected);
     });
 
     return () => {
@@ -15,7 +15,7 @@ const useNetInfo = () => {
     };
   }, []);
 
-  return netInfo;
+  return isConnected;
 };
 
 export default useNetInfo;

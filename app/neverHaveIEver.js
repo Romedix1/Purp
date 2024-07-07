@@ -6,14 +6,14 @@ import { readCategories } from './scripts/categories'; // Import category from l
 import Nav from './components/nav'; // Import Nav component
 import LoadingScreen from './loadingScreen'; // Import loading screen
 import DatabaseErrorScreen from './databaseError'; // Import database error screen
-import { drawACategory, drawSecondCategory, getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
+import { getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
 import useNetInfo from './scripts/checkConnection'
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { readAdCounter, saveAdCounter } from './scripts/adCounter'
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+const adUnitId = TestIds.INTERSTITIAL;
 
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
@@ -22,71 +22,6 @@ const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
 function NeverHaveIEver() {
   // Set variable with window width and window height using useWindowDimensions hook
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-
-  const styles = StyleSheet.create({
-    mainContainer: {
-      backgroundColor: '#131313',
-      alignItems: 'center',
-    },
-    categoriesMenuBackgroundOpacity: {
-      backgroundColor: '#000', 
-      position: 'absolute',
-      opacity: .5, 
-      zIndex: 5,
-      width: 1 * windowWidth, 
-      height: 6 * windowHeight
-    },
-    displayedCategory: {
-      fontFamily: 'LuckiestGuy', 
-      width: '90%',
-      color: '#FFF', 
-      textAlign: 'center',
-      fontSize: .08 * windowWidth, 
-      marginTop: .07 * windowWidth
-    },
-    questionContainer: {
-      backgroundColor: '#41008B', 
-      borderRadius: .09 * windowWidth,
-      borderColor: '#FFF',
-      width: .78 * windowWidth, 
-      marginTop: .1 * windowWidth, 
-      borderWidth: .009 * windowWidth,
-      minHeight: 1.05 * windowWidth,
-      paddingTop: .15 * windowWidth, 
-      paddingHorizontal: .05 * windowWidth
-    },
-    questionText: {
-      textAlign: 'center', 
-      fontFamily: 'LuckiestGuy', 
-      color: '#FFF',
-      fontSize: .08 * windowWidth,
-
-    },
-    questionBackCard: {
-      width: .78 * windowWidth, 
-      borderRadius: 32, 
-      borderColor: '#FFF', 
-      paddingBottom: .2 * windowWidth, 
-      borderWidth: 4,
-      position: 'relative'
-    },
-    buttonContainer: {
-      backgroundColor: '#6C1EC5',
-      paddingVertical: .02 * windowWidth,
-      borderRadius: .035 * windowWidth,
-      width: '80%',
-      textAlign: 'center',
-      position: 'relative',
-      top: -(.17 * windowWidth),
-      marginBottom: .2 * windowWidth
-    },
-    buttonText: {
-      textAlign: 'center',
-      fontSize: .08 * windowWidth,
-      fontFamily: 'LuckiestGuy',
-      color: '#fff',
-    },
-  });
 
   // Set current language (default is english)
   const [currentLang, setCurrentLang] = useState('en');
@@ -105,7 +40,7 @@ function NeverHaveIEver() {
   // State for storing category translation (only in polish version)
   const [translatedCategory, setTranslatedCategory] = useState('');
   // State for storing second category translation (only in polish version)
-  const [secondTranslatedCategory, setsecondTranslatedCategory] = useState('');
+  const [secondTranslatedCategory, setSecondTranslatedCategory] = useState('');
   // State for tracking categories on load (button handling)
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   // State for tracking which question should be displayed
@@ -129,6 +64,74 @@ function NeverHaveIEver() {
   const [counterLoaded, setCounterLoaded] = useState(false);
   // State to tracking that ad is loaded
   const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  // Array with recently used questions
+  const [unavailableQuestions, setUnavailableQuestions] = useState([]);
+
+  const styles = StyleSheet.create({
+    mainContainer: {
+      backgroundColor: '#131313',
+      alignItems: 'center',
+    },
+    categoriesMenuBackgroundOpacity: {
+      backgroundColor: '#000', 
+      position: 'absolute',
+      opacity: .5, 
+      zIndex: 5,
+      width: 1 * windowWidth, 
+      height: 6 * windowHeight
+    },
+    displayedCategory: {
+      fontFamily: 'LuckiestGuy', 
+      width: '90%',
+      color: '#FFF', 
+      textAlign: 'center',
+      fontSize: isTablet ? .055 * windowWidth : .08 * windowWidth, 
+      marginTop: isTablet ? .045 * windowWidth : .07 * windowWidth
+    },
+    questionContainer: {
+      backgroundColor: '#41008B', 
+      borderRadius: .09 * windowWidth,
+      borderColor: '#FFF',
+      width: isTablet ? .65 * windowWidth : .78 * windowWidth, 
+      marginTop: isTablet ? .06 * windowWidth : .1 * windowWidth, 
+      borderWidth: .009 * windowWidth,
+      minHeight: isTablet ? .60 * windowWidth : 1.05 * windowWidth,
+      paddingTop: isTablet ? .1 * windowWidth : .15 * windowWidth, 
+      paddingHorizontal: .05 * windowWidth
+    },
+    questionText: {
+      textAlign: 'center', 
+      fontFamily: 'LuckiestGuy', 
+      color: '#FFF',
+      fontSize: isTablet ? .05 * windowWidth : .08 * windowWidth,
+      minHeight:  isTablet ? .55 * windowWidth : 1 * windowWidth
+    },
+    questionBackCard: {
+      width: isTablet ? .65 * windowWidth : .78 * windowWidth, 
+      borderRadius: isTablet ? 56 : 32, 
+      borderColor: '#FFF', 
+      paddingBottom: .2 * windowWidth, 
+      borderWidth: 4,
+      position: 'relative'
+    },
+    buttonContainer: {
+      backgroundColor: '#6C1EC5',
+      paddingVertical: .02 * windowWidth,
+      borderRadius: .035 * windowWidth,
+      width: isTablet ? '65%' : '80%',
+      textAlign: 'center',
+      position: 'relative',
+      top: isTablet ? -(.25 * windowWidth) : -(.17 * windowWidth),
+      marginBottom: isTablet ? .04 * windowWidth : .2 * windowWidth
+    },
+    buttonText: {
+      textAlign: 'center',
+      fontSize: isTablet ? .05 * windowWidth : .08 * windowWidth,
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
+    },
+  });
 
   // State for rotation animation
   const rotateValue = useState(new Animated.Value(0))[0];
@@ -181,6 +184,8 @@ function NeverHaveIEver() {
       setSelectedCategories(category);
       // Setting that categories are loaded
       setCategoriesLoaded(true);
+
+      setIsTablet(windowWidth>=600)
 
       componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
@@ -240,57 +245,50 @@ function NeverHaveIEver() {
       }
   }, [adCounter]);
 
-  // Draw selected categories after load
-  useEffect(() => {
-    if (selectedCategories.length > 0) {
-      drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
-      drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory);
-    }
-  }, [categoriesLoaded]);
+
   
   // Function to load second question which should be displayed
   useEffect(() => {
     let firstQuestionTimeout;
     let secondQuestionTimeout;
 
-    if (translatedCategory) {
-      if (!firstQuestion) {
-        getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus).then(() => {
-          firstQuestionTimeout = setTimeout(() => {
-            setQuestionsLoaded(true);
-            setComponentLoaded(true);
-          }, 50);
-        })
-      }
-  
-      if (!secondQuestion) {
-        getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion, setDatabaseErrorStatus).then(() => {
-            secondQuestionTimeout = setTimeout(() => {
+    if(categoriesLoaded) {
+        if (!firstQuestion) {
+          getQuestion(currentLang, setFirstQuestion, setDatabaseErrorStatus, setDrawnCategory, setTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions).then(() => {
+            firstQuestionTimeout = setTimeout(() => {
               setQuestionsLoaded(true);
               setComponentLoaded(true);
             }, 50);
-        });
+          })
+        }
+    
+        if (!secondQuestion) {
+          getSecondQuestion(currentLang, setSecondQuestion, setDatabaseErrorStatus, setSecondDrawnCategory, setSecondTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions).then(() => {
+              secondQuestionTimeout = setTimeout(() => {
+                setQuestionsLoaded(true);
+                setComponentLoaded(true);
+              }, 50);
+          });
       }
     }
-    
     return () => {
       clearTimeout(firstQuestionTimeout);
       clearTimeout(secondQuestionTimeout);
     };
-  }, [translatedCategory]);
+  }, [categoriesLoaded]);
   
   // Fetching question and category depend on question status
   useEffect(() => {
     async function fetchQuestionsAndDrawCategory() {
-      if (secondQuestionStatus) {
-        if (translatedCategory) {
-          getQuestion(translatedCategory, currentLang, setFirstQuestion); 
-          drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
-        }
-      } else {
-        if (secondTranslatedCategory) {
-          getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion);
-          drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory)
+      if(categoriesLoaded) {
+        if (secondQuestionStatus) {
+          if (translatedCategory) {
+            getQuestion(currentLang, setFirstQuestion, setDatabaseErrorStatus, setDrawnCategory, setTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions)
+          }
+        } else {
+          if (secondTranslatedCategory) {
+            getSecondQuestion(currentLang, setSecondQuestion, setDatabaseErrorStatus, setSecondDrawnCategory, setSecondTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions)
+          }
         }
       }
     }
@@ -311,6 +309,7 @@ function NeverHaveIEver() {
   // Function for getting second question with card discard animation
   async function getQuestions() {
     setLoadingSecondQuestion(true);
+    
     Animated.parallel([
       Animated.timing(rotateValue, {
         toValue: direction ? 1 : -1,
@@ -325,20 +324,18 @@ function NeverHaveIEver() {
     ]).start(() => {
       rotateValue.setValue(0);
       slideValue.setValue(0);
-      
-      // Changing state for the question which should be displayed
-      setSecondQuestionStatus(prev => !prev);
+                
+    // Changing state for the question which should be displayed
+    setSecondQuestionStatus(prev => !prev);
       // If the second question status is true, then get and draw the second question
-      if (secondQuestionStatus) {
-        getSecondQuestion(secondTranslatedCategory, currentLang, setSecondQuestion).then(() => {
-          setLoadingSecondQuestion(false);
-          drawSecondCategory(selectedCategories, setSecondDrawnCategory, setsecondTranslatedCategory, setDatabaseErrorStatus);
-        });
+      if(secondQuestionStatus) {
+        getSecondQuestion(currentLang, setSecondQuestion, setDatabaseErrorStatus, setSecondDrawnCategory, setSecondTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions).then(() => {
+            setLoadingSecondQuestion(false);
+          });
       // If the second question status is false, then get and draw the second question
       } else {
-        getQuestion(translatedCategory, currentLang, setFirstQuestion, setDatabaseErrorStatus).then(() => {
-          setLoadingSecondQuestion(false);
-          drawACategory(selectedCategories, setDrawnCategory, setTranslatedCategory);
+        getQuestion(currentLang, setFirstQuestion, setDatabaseErrorStatus, setDrawnCategory, setTranslatedCategory, selectedCategories, unavailableQuestions, setUnavailableQuestions).then(() => {
+            setLoadingSecondQuestion(false);
         });
       }
 
@@ -394,7 +391,7 @@ function NeverHaveIEver() {
     setIsCategoriesMenuOpened(!isCategoriesMenuOpened);
 
     Animated.timing(categoriesHeight, {
-      toValue: isCategoriesMenuOpened ? 0 : .735 * windowWidth,
+      toValue: isCategoriesMenuOpened ? 0 : (isTablet ? .555 * windowWidth : .735 * windowWidth),
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -407,18 +404,18 @@ function NeverHaveIEver() {
 
   // Display database error screen if there is error in fetching from database
   if (databaseErrorStatus) {
-    return <DatabaseErrorScreen />;
+    return <DatabaseErrorScreen/>;
   }
 
-  // Display internet error screen if there is no internet connection
+  // Display internet connection error screen if there is no internet connection
   if (!netInfo) {
     return <ConnectionErrorScreen/>;
   }
 
   return (
-    <View>
+    <View style={{backgroundColor: '#131313'}}>
       <StatusBar backgroundColor='#000' style="light" />
-      <Nav isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} rotateArrow={rotateArrow} arrowRotateInterpolate={arrowRotateInterpolate} />
+      <Nav isTablet={isTablet} isCategoriesMenuOpened={isCategoriesMenuOpened} setIsCategoriesMenuOpened={setIsCategoriesMenuOpened} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} currentLang={currentLang} neverHaveIEver={true} toggleCategories={toggleCategories} categoriesHeight={categoriesHeight} rotateArrow={rotateArrow} arrowRotateInterpolate={arrowRotateInterpolate} />
       <ScrollView contentContainerStyle={styles.mainContainer}>
         {isCategoriesMenuOpened && <Pressable onPress={() => {toggleCategories(), rotateArrow()}} style={styles.categoriesMenuBackgroundOpacity}></Pressable>}
         <Text style={styles.displayedCategory}>{currentLang === 'pl' ? 'Kategoria: ' : 'Category: '} {secondQuestionStatus ? secondDrawnCategory : drawnCategory} </Text>
@@ -430,9 +427,9 @@ function NeverHaveIEver() {
           <Animated.View {...panResponder.panHandlers} style={[styles.questionContainer, { transform: [{ rotate: secondQuestionStatus ? rotateCard : '0deg' }, { translateX: secondQuestionStatus ? slideCard : 0 }], zIndex: secondQuestionStatus ? 2 : 1, position: 'absolute' }]}>
             <Text style={styles.questionText}>{secondQuestion}</Text>
           </Animated.View>
-          <View style={[styles.questionBackCard, { top: -0.15 * windowWidth, zIndex: -2, backgroundColor: '#300066' }]}>
+          <View style={[styles.questionBackCard, { top: isTablet ? -0.17 * windowWidth : -0.15 * windowWidth, zIndex: -2, backgroundColor: '#300066' }]}>
           </View>
-          <View style={[styles.questionBackCard, { top: -0.3 * windowWidth, zIndex: -3, backgroundColor: '#1E0041' }]}>
+          <View style={[styles.questionBackCard, { top: isTablet ? -0.33 * windowWidth : -0.3 * windowWidth, zIndex: -3, backgroundColor: '#1E0041' }]}>
           </View>
         </View>
   

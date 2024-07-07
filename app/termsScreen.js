@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, Pressable, ScrollView, Linking, useWindowDimensions, PanResponder, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Linking, useWindowDimensions, TouchableOpacity } from 'react-native';
 import Nav from './components/nav'; // Import Nav component
 import { useFonts } from "expo-font";
-import Cards from './components/mainCards'; // Import game cards component
-import { readLanguage, saveLanguage } from './scripts/language'; // Import language functions
-import { saveTerms } from './scripts/terms'; // Import language functions
-import CardsData from './components/mainCardsData.json'; // Import game cards data component
+import { readLanguage } from './scripts/language'; // Import language functions
 import LoadingScreen from './loadingScreen'; // Import loading screen component
-import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
-import useNetInfo from './scripts/checkConnection'
 import { StatusBar } from 'expo-status-bar';
 import { Link } from 'expo-router';
 
-const termsScreen = () => {
+const termsScreen = (props) => {
   // Load fonts 
   const [fontsLoaded] = useFonts({
     'LuckiestGuy': require('../assets/fonts/LuckiestGuy-Regular.ttf'),
@@ -21,12 +16,8 @@ const termsScreen = () => {
   // Set variable with window width using useWindowDimensions hook
   const { width: windowWidth } = useWindowDimensions();
 
-  // Set current language (default is english)
-  const [currentLang, setCurrentLang] = useState("en");
   // State for tracking loading component
   const [componentLoaded, setComponentLoaded] = useState(false);
-  // State for tracking the acceptance status of the terms and conditions
-  const [terms, setTerms] = useState(false);
 
   // Styles
   const styles = StyleSheet.create({
@@ -37,41 +28,43 @@ const termsScreen = () => {
       minHeight: 2 * windowWidth,
     },
     textBox: {
-      marginTop: .2 * windowWidth,
+      marginTop: props.isTablet ? .07 * windowWidth : .2 * windowWidth,
       width: '80%',
       alignItems: 'center',
       backgroundColor: '#1F152E',
       paddingHorizontal: .06 * windowWidth,
-      paddingVertical: .1 * windowWidth,
+      paddingVertical: props.isTablet ? .06 * windowWidth : .1 * windowWidth,
       borderRadius: .08 * windowWidth, 
       borderWidth: .01 * windowWidth, 
       borderColor: '#fff'
     },
     header: {
-      fontSize: .13 * windowWidth,
+      fontSize: props.isTablet ? .1 * windowWidth : .13 * windowWidth,
       fontFamily: 'LuckiestGuy',
       color: '#fff',
     },
     mainText: {
-      fontSize: .054 * windowWidth,
+      fontSize: props.isTablet ? .045 * windowWidth : .054 * windowWidth,
       fontFamily: 'LuckiestGuy',
       color: '#fff',
       textAlign: 'center',
-      marginTop: .02 * windowWidth
+      marginTop: .02 * windowWidth,
+      lineHeight: props.isTablet ? .055 * windowWidth : .065 * windowWidth
     },
     acceptButton: {
       width: '100%',
-      marginTop: .11 * windowWidth,
+      marginTop: props.isTablet ? .08 * windowWidth : .11 * windowWidth,
       backgroundColor: '#6C1EC5',
-      fontSize: .06 * windowWidth,
-      fontFamily: 'LuckiestGuy',
-      color: '#fff',
       borderColor: '#fff',
       borderRadius: .045 * windowWidth, 
-      borderWidth: .007 * windowWidth, 
+      borderWidth: props.isTablet ? .006 * windowWidth : .007 * windowWidth, 
+      paddingVertical: .01 * windowWidth,
+    }, 
+    buttonText: {
+      fontSize: props.isTablet ? .05 * windowWidth : .06 * windowWidth,
+      fontFamily: 'LuckiestGuy',
+      color: '#fff',
       textAlign: 'center',
-      paddingTop: .025 * windowWidth,
-      paddingBottom: .01 * windowWidth,
     }
   })
 
@@ -81,7 +74,7 @@ const termsScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       const lang = await readLanguage();
-      setCurrentLang(lang);
+      props.setCurrentLang(lang);
 
       componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
     };
@@ -94,7 +87,7 @@ const termsScreen = () => {
   }, []);
 
   function privacyLink() {
-    if(currentLang==="pl") {
+    if(props.currentLang==="pl") {
       Linking.openURL('https://docs.google.com/document/d/1XWKVwW5c7qOJeed8sHawfWCIWTOuZ8OFlQiDQhK-mhU/edit?usp=sharing');
     } else {
       Linking.openURL('https://docs.google.com/document/d/1nnWG01UBXcyjic5eXIGi576gavVUDgucaMj-rgzJpFI/edit?usp=sharing');
@@ -107,27 +100,29 @@ const termsScreen = () => {
   }
 
   return (
-    <View>
+    <View style={{backgroundColor: '#131313'}}>
       <StatusBar backgroundColor='#000' style="light" />
-      <Nav setCurrentLang={setCurrentLang} currentLang={currentLang} main={true} contact='none'/>
+      <Nav setCurrentLang={props.setCurrentLang} currentLang={props.currentLang} main={true} contact='none'/>
 
       <ScrollView contentContainerStyle={styles.mainContainer}>
 
         <View style={styles.textBox}>
-          <Text style={styles.header}>{currentLang === 'pl' ? 'Cześć!' : 'Hey!'}</Text>
+          <Text style={styles.header}>{props.currentLang === 'pl' ? 'Cześć!' : 'Hey!'}</Text>
           <Text style={styles.mainText}>
-            {currentLang === 'pl' ? 
+            {props.currentLang === 'pl' ? 
               `Przed rozpoczęciem gry, przeczytaj i zaakceptuj naszą ` : 
               `Before starting the game, please read and accept our `}
             <Text onPress={() => privacyLink()} style={{color: '#03baf8'}}>
-              {currentLang === 'pl' ? `politykę prywatności` : `privacy policy`}
+              {props.currentLang === 'pl' ? `politykę prywatności` : `privacy policy`}
             </Text>
-              {currentLang === 'pl' ? 
+              {props.currentLang === 'pl' ? 
                 ` która zawiera warunki korzystania z naszej aplikacji i wyjaśnia sposób przetwarzania danych. Politykę możesz również znaleźć w sekcji "O aplikacji"` : 
                 `, which contains the terms of use of our application and explains how data is processed. You can also find the policy in the "About app" section.`}
           </Text>
-          <Link style={styles.acceptButton} href='/' asChild onPress={() => saveTerms(true)}>
-              <Text>{currentLang === 'pl' ? 'akceptuje' : 'accept'}</Text>
+          <Link asChild href='/'>
+            <TouchableOpacity style={styles.acceptButton} onPress={() => props.setTerms(true)}>
+                <Text style={styles.buttonText}>{props.currentLang === 'pl' ? 'akceptuje' : 'accept'}</Text>
+            </TouchableOpacity>
           </Link>
         </View>
       </ScrollView>
