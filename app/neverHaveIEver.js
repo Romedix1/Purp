@@ -5,6 +5,7 @@ import { readLanguage } from './scripts/language'; // Import language functions
 import { readCategories } from './scripts/categories'; // Import category from local storage
 import Nav from './components/nav'; // Import Nav component
 import LoadingScreen from './loadingScreen'; // Import loading screen
+import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import DatabaseErrorScreen from './databaseError'; // Import database error screen
 import { getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
 import useNetInfo from './scripts/checkConnection'
@@ -433,9 +434,9 @@ function NeverHaveIEver() {
           </View>
         </View>
   
-        <TouchableOpacity disabled={loadingSecondQuestion} onPress={getQuestions} style={styles.buttonContainer}>
+        <TouchableOpacity disabled={loadingSecondQuestion} onPress={getQuestions} style={styles.buttonContainer}> 
           <Text style={styles.buttonText}>{currentLang === 'pl' ? 'Następne pytanie' : 'Next question '}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> 
   
       </ScrollView>
     </View>
