@@ -29,9 +29,7 @@ async function getRandomTask(setTask, currentLang, setDatabaseErrorStatus, unava
 
         setTask(taskData[currentLang]);
         setUnavailableQuestions([...unavailableQuestions, randomTaskIndex]);
-        console.log(unavailableQuestions)
     } catch (error) {
-        console.error(error);
         setDatabaseErrorStatus(true);
         setTask('');
     }

@@ -15,6 +15,7 @@
       "bundleIdentifier": "com.romedix.Purp"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundImage": "./assets/images/adaptive-icon-background.png"
@@ -25,7 +26,27 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-9633487588777768~5494327929",
+          "iosAppId": "ca-app-pub-9633487588777768~5494327929"
+        }
+      ],
+      ["expo-build-properties",
+      {
+        "android": {
+          "compileSdkVersion": 34,
+          "targetSdkVersion": 34,
+          "buildToolsVersion": "34.0.0"
+        },
+        "ios": {
+          "useFrameworks": "static"
+        }
+      }]
     ],
     "extra": {
       "router": {
@@ -35,8 +56,5 @@
         "projectId": "b4f1bc4d-88eb-4131-9641-0ae5890a3898"
       }
     }
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-9633487588777768~2873420161"
   }
 }

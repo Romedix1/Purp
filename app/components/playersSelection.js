@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, useWindowDimensions, Image, ScrollView, TextInput, KeyboardAvoidingView, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, Image, ScrollView, TextInput, KeyboardAvoidingView, TouchableOpacity, Pressable, Platform } from 'react-native';
 import { useFonts } from "expo-font"; 
 import { Link } from 'expo-router';
 
@@ -11,6 +11,7 @@ function playersSelection(props) {
         mainContainer: {
             backgroundColor: '#131313',
             alignItems: 'center',
+            flex: 1
         },
         mainHeader: {
             fontFamily: 'LuckiestGuy',
@@ -117,7 +118,7 @@ function playersSelection(props) {
     }
 
     return (
-        <KeyboardAvoidingView style={styles.mainContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <KeyboardAvoidingView style={styles.mainContainer}>
             <Text style={[ styles.mainHeader, { marginTop: props.isTablet ? .065 * windowWidth : .09 * windowWidth }]}>{props.currentLang === 'pl' ? 'Wprowadź' : 'Insert'}</Text>
             <Text style={[ styles.mainHeader, { color: props.game==="sevenSeconds" ? '#0A6CFF' : '#EB1010', lineHeight: props.isTablet ? .095 * windowWidth : .135 * windowWidth }]}>{props.currentLang === 'pl' ? 'Graczy' : 'Players'}</Text>
 

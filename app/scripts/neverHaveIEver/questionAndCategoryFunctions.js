@@ -54,9 +54,7 @@ import { db } from '../../../firebaseConfig';
       const questionText = questionDocSnapshot.data()[currentLang];
       setFirstQuestion(questionText);
       setUnavailableQuestions([...unavailableQuestions, { number: randomQuestionNumber, category: translateCategory(randCategory)}]);
-      console.log(unavailableQuestions);
     } catch (error) {
-      console.log(error);
       setDatabaseErrorStatus(true);
       setFirstQuestion(error);
     }
@@ -69,7 +67,6 @@ import { db } from '../../../firebaseConfig';
   
     setSecondDrawnCategory(secondRandCategory)
     setSecondTranslatedCategory(translateCategory(secondRandCategory))
-    console.log(translateCategory(secondRandCategory))
     try {
       const categoryRef = doc(neverHaveIEverRef, translateCategory(secondRandCategory));
       const questionsRef = collection(categoryRef, 'Questions');
@@ -93,9 +90,7 @@ import { db } from '../../../firebaseConfig';
       const secondQuestionText = secondQuestionDocSnapshot.data()[currentLang];
       setSecondQuestion(secondQuestionText);
       setUnavailableQuestions([...unavailableQuestions, { number: randomSecondQuestionNumber, category: translateCategory(secondRandCategory)}]);
-      console.log(unavailableQuestions);
     } catch (error) {
-      console.log(error);
       setDatabaseErrorStatus(true);
       setSecondQuestion(error);
     }

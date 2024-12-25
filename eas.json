@@ -19,7 +19,8 @@
         "PROJECT_ID": "${PROJECT_ID}",
         "STORAGE_BUCKET": "${STORAGE_BUCKET}",
         "MESSAGING_SENDER_ID": "${MESSAGING_SENDER_ID}",
-        "APP_ID": "${APP_ID}"
+        "APP_ID": "${APP_ID}",
+        "AD_UNIT_ID": "${AD_UNIT_ID}"
       }
     }
   },

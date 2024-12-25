@@ -11,6 +11,7 @@ import TermsScreen from './termsScreen'; // Import terms screen component
 import ConnectionErrorScreen from './connectionError'; // Import connection error screen component
 import useNetInfo from './scripts/checkConnection'
 import { StatusBar } from 'expo-status-bar';
+import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 
 const index = () => {
   // Load fonts 
@@ -80,6 +81,39 @@ const index = () => {
   
   // Fetching saved language
   useEffect(() => {
+    mobileAds()
+      .setRequestConfiguration({
+        // Update all future requests suitable for parental guidance
+        maxAdContentRating: MaxAdContentRating.PG,
+
+        // Indicates that you want your content treated as child-directed for purposes of COPPA.
+        tagForChildDirectedTreatment: true,
+
+        // Indicates that you want the ad request to be handled in a
+        // manner suitable for users under the age of consent.
+        tagForUnderAgeOfConsent: true,
+
+        // An array of test device IDs to allow.
+        testDeviceIdentifiers: ['EMULATOR'],
+      })
+      .then(() => {
+        try {
+          console.log("complete")
+        } catch (error) {
+          crashlytics().recordError(error);
+        }
+      });
+
+    mobileAds()
+      .initialize()
+      .then(adapterStatuses => {
+        try {
+          console.log("Initialization complete!")
+        } catch (error) {
+          crashlytics().recordError(error);
+        }
+      });
+
     let componentTimeout;
     const fetchData = async () => {
       const lang = await readLanguage();

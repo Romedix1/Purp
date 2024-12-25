@@ -9,16 +9,17 @@ import ConnectionErrorScreen from './connectionError'; // Import connection erro
 import DatabaseErrorScreen from './databaseError'; // Import database error screen
 import { getQuestion, getSecondQuestion } from './scripts/neverHaveIEver/questionAndCategoryFunctions'; // Import questions and category functions
 import useNetInfo from './scripts/checkConnection'
-import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+// import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { readAdCounter, saveAdCounter } from './scripts/adCounter'
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
+// import { AD_UNIT_ID } from '@env';
 
-const adUnitId = TestIds.INTERSTITIAL;
+// const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : AD_UNIT_ID;
 
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
+// const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+//   requestNonPersonalizedAdsOnly: true,
+// });
 
 function NeverHaveIEver() {
   // Set variable with window width and window height using useWindowDimensions hook
@@ -210,41 +211,41 @@ function NeverHaveIEver() {
       await FileSystem.deleteAsync(FileSystem.cacheDirectory, { idempotent: true });
   }
   
-  useEffect(() => {
-    const handleAdLoaded = () => {
-      setIsAdLoaded(true);
-    };
+  // useEffect(() => {
+  //   const handleAdLoaded = () => {
+  //     setIsAdLoaded(true);
+  //   };
   
-    const handleAdClosed = () => {
-      setIsAdLoaded(false);
-      setAdCounter(1)
-      clearCache();
-    };
+  //   const handleAdClosed = () => {
+  //     setIsAdLoaded(false);
+  //     setAdCounter(1)
+  //     clearCache();
+  //   };
   
-    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, handleAdLoaded);
-    const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
+  //   const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, handleAdLoaded);
+  //   const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
 
-    interstitial.load();
+  //   interstitial.load();
   
-    return () => {
-      unsubscribeLoaded();
-      unsubscribeAdClosed();
+  //   return () => {
+  //     unsubscribeLoaded();
+  //     unsubscribeAdClosed();
 
-      interstitial.removeAllListeners();
-    };
-  }, []);
+  //     interstitial.removeAllListeners();
+  //   };
+  // }, []);
 
-  useEffect(() => {
-    if(!isAdLoaded)
-    {
-      interstitial.load();
-      setIsAdLoaded(true);
-    }
+  // useEffect(() => {
+  //   if(!isAdLoaded)
+  //   {
+  //     interstitial.load();
+  //     setIsAdLoaded(true);
+  //   }
 
-      if (adCounter % 10 === 0) {
-        interstitial.show();
-      }
-  }, [adCounter]);
+  //     if (adCounter % 10 === 0) {
+  //       interstitial.show();
+  //     }
+  // }, [adCounter]);
 
 
   

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, useWindowDimensions, Animated, Pressable, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, Animated, Pressable, TouchableOpacity, ScrollView, Button } from 'react-native';
 import { useFonts } from "expo-font"; 
 import { readLanguage } from './scripts/language'; // Import function savePlayers to saving players in local storage
 import Nav from './components/nav'; // Import Nav component
@@ -12,12 +12,14 @@ import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile
 import { readAdCounter, saveAdCounter } from './scripts/adCounter' // Import function saveCounter and readCounter to saving counter value and reading counter value in local storage
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
+import { AD_UNIT_ID } from '@env';
+import crashlytics from "@react-native-firebase/crashlytics";
 
-const adUnitId = TestIds.INTERSTITIAL;
+// const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : AD_UNIT_ID;
 
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
+// const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+//   requestNonPersonalizedAdsOnly: true,
+// });
 
 function TruthOrDare() {
     // Set variable with window width using useWindowDimensions hook
@@ -53,7 +55,7 @@ function TruthOrDare() {
     const [adCounter, setAdCounter] = useState(1);
     const [counterLoaded, setCounterLoaded] = useState(false);
     // State to tracking that ad is loaded
-    const [isAdLoaded, setIsAdLoaded] = useState(false);
+    const [loaded, setLoaded] = useState(false);
     // Array with players who can't be currently drawn
     const [safePlayers, setSafePlayers] = useState([]);
     // State for tracking round number
@@ -217,9 +219,9 @@ function TruthOrDare() {
 
             componentTimeout = setTimeout(() => setComponentLoaded(true), 50)
         };
-    
+        // interstitial.load();
         fetchData();
-    
+
         return () => {
           clearTimeout(componentTimeout)
         }  
@@ -530,49 +532,49 @@ function TruthOrDare() {
         await FileSystem.deleteAsync(FileSystem.cacheDirectory, { idempotent: true });
     }
 
-    useEffect(() => {
-    const handleAdLoaded = () => {
-        setIsAdLoaded(true);
-    };
+    // useEffect(() => {
+    //     const handleAdClosed = () => {
+    //         setLoaded(false);
+    //         setAdCounter(1)
+    //         // clearCache();
+    //         console.log('Ad closed');
+    //     };
 
-    const handleAdClosed = () => {
-        setIsAdLoaded(false);
-        setAdCounter(1)
-        clearCache();
-    };
+    //     const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+    //         console.log('Ad loaded');
+    //         setLoaded(true);
+    //     });
+    //     const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
 
-    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, handleAdLoaded);
-    const unsubscribeAdClosed = interstitial.addAdEventListener(AdEventType.CLOSED, handleAdClosed);
+    //     return () => {
+    //         unsubscribeLoaded();
+    //         unsubscribeAdClosed();
 
-    interstitial.load();
+    //         interstitial.removeAllListeners();
+    //     };
+    // }, [counterLoaded]);
 
-    return () => {
-        unsubscribeLoaded();
-        unsubscribeAdClosed();
+    // useEffect(() => {
+    //     return () => {
+    //         interstitial.removeAllListeners();
+    //     };
+    // }, []);
 
-        interstitial.removeAllListeners();
-    };
-    }, []);
+    // useEffect(() => {
+    //     if(counterLoaded)
+    //     {
+    //         saveAdCounter(adCounter);
+    //     }
 
-    useEffect(() => {
-    if(!isAdLoaded)
-    {
-        interstitial.load();
-        setIsAdLoaded(true);
-    }
-
-        if (adCounter % 20 === 0) {
-            interstitial.show();
-        }
-
-    }, [adCounter]);
-
-    useEffect(() => {
-        if(counterLoaded)
-        {
-            saveAdCounter(adCounter);
-        }
-    }, [adCounter]);
+    //     if(!loaded)
+    //     {
+    //         interstitial.load();
+    //     }
+    
+    //     if (adCounter % 20 === 0) {
+    //         interstitial.show();
+    //     }
+    // }, [adCounter]);
 
     // Update ad counter value after question changed
     useEffect(() => {
@@ -602,6 +604,7 @@ function TruthOrDare() {
             <Nav isTablet={isTablet} currentLang={currentLang} main={false}/>
             <ScrollView contentContainerStyle={[styles.mainContainer]}>
                 <View style={[styles.currentPlayerContainer, { display: selectedCard !== '' ? 'none' : 'block'}]}>
+                    
                     {currentLang === 'pl' ? (
                         <>
                             <Text style={styles.currentPlayer}>Wybiera  </Text>
@@ -615,7 +618,6 @@ function TruthOrDare() {
                     )}
 
                 </View>
-                
                 <View style={[styles.cardsContainer, {marginTop:  isTablet ? 0.15 * windowWidth : 0.25 * windowWidth, paddingTop: selectedCard !== '' ? .08 * windowWidth : 0}]}>
                     <Pressable style={{zIndex: 1}} onPress={() => selectCard("Truth")}>
                         <Animated.View style={[styles.cardsContainer, styles.card,  { opacity: !truthCardVisibility ? 0 : 1, transform: [{ rotate: rotateTruthCard}, {translateX: truthTransformX}, { scaleX: truthScaleX }, { scaleY: truthScaleY } ]}]}>
